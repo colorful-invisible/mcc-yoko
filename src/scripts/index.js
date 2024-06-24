@@ -11,7 +11,7 @@ new p5((sk) => {
   let sliceWidth, sliceHeight, sliceStartX, sliceStartY;
   let sliceSlider;
 
-  buffer = [];
+  const buffer = [];
 
   sk.setup = () => {
     sk.createCanvas(sk.windowWidth, sk.windowHeight);

@@ -596,7 +596,7 @@ new (0, _p5Default.default)((sk)=>{
     let capture;
     let sliceWidth, sliceHeight, sliceStartX, sliceStartY;
     let sliceSlider;
-    buffer = [];
+    const buffer = [];
     sk.setup = ()=>{
         sk.createCanvas(sk.windowWidth, sk.windowHeight);
         capture = (0, _cameraUtils.initializeCamCapture)(sk);
