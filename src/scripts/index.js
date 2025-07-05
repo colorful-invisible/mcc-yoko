@@ -18,13 +18,14 @@ new p5((sk) => {
 
   const buffer = [];
 
+  sk.preload = () => {
+    customFont = sk.loadFont(fontUrl);
+  };
+
   sk.setup = () => {
     sk.createCanvas(sk.windowWidth, sk.windowHeight);
     capture = initializeCamCapture(sk);
     sk.colorMode(sk.HSL, 360, 100, 100, 100);
-
-    // Load custom font
-    customFont = sk.loadFont(fontUrl);
 
     // Initialize timer
     startTime = sk.millis();

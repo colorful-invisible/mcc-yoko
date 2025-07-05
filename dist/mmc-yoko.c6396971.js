@@ -686,12 +686,13 @@ new (0, _p5Default.default)((sk)=>{
     let experienceStarted = false;
     let fadeStartTime;
     const buffer = [];
+    sk.preload = ()=>{
+        customFont = sk.loadFont((0, _monaspaceNeonWideExtraLightOtfDefault.default));
+    };
     sk.setup = ()=>{
         sk.createCanvas(sk.windowWidth, sk.windowHeight);
         capture = (0, _cameraUtils.initializeCamCapture)(sk);
         sk.colorMode(sk.HSL, 360, 100, 100, 100);
-        // Load custom font
-        customFont = sk.loadFont((0, _monaspaceNeonWideExtraLightOtfDefault.default));
         // Initialize timer
         startTime = sk.millis();
         sliceSlider = document.getElementById("sliceSlider");
