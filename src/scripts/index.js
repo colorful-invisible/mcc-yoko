@@ -13,7 +13,6 @@ new p5((sk) => {
   let sliceSlider;
   let customFont;
   let startTime;
-  let experienceStarted = false;
   let fadeStartTime;
 
   const buffer = [];
@@ -25,7 +24,6 @@ new p5((sk) => {
   sk.setup = () => {
     sk.createCanvas(sk.windowWidth, sk.windowHeight);
     capture = initializeCamCapture(sk);
-    sk.colorMode(sk.HSL, 360, 100, 100, 100);
 
     // Initialize timer
     startTime = sk.millis();
