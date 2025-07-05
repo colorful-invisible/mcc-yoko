@@ -6,7 +6,16 @@
 // anything defined in a previous bundle is accessed via the
 // orig method which is the require for previous bundles
 
-(function (modules, entry, mainEntry, parcelRequireName, globalName) {
+(function (
+  modules,
+  entry,
+  mainEntry,
+  parcelRequireName,
+  externals,
+  distDir,
+  publicUrl,
+  devServer
+) {
   /* eslint-disable no-undef */
   var globalObject =
     typeof globalThis !== 'undefined'
@@ -25,6 +34,7 @@
     typeof globalObject[parcelRequireName] === 'function' &&
     globalObject[parcelRequireName];
 
+  var importMap = previousRequire.i || {};
   var cache = previousRequire.cache || {};
   // Do not use `require` to prevent Webpack from trying to bundle this call
   var nodeRequire =
@@ -35,6 +45,9 @@
   function newRequire(name, jumped) {
     if (!cache[name]) {
       if (!modules[name]) {
+        if (externals[name]) {
+          return externals[name];
+        }
         // if we cannot find the module within our internal map or
         // cache jump to the current global require ie. the last bundle
         // that was added to the page.
@@ -73,7 +86,7 @@
         localRequire,
         module,
         module.exports,
-        this
+        globalObject
       );
     }
 
@@ -93,6 +106,7 @@
   function Module(moduleName) {
     this.id = moduleName;
     this.bundle = newRequire;
+    this.require = nodeRequire;
     this.exports = {};
   }
 
@@ -101,6 +115,10 @@
   newRequire.modules = modules;
   newRequire.cache = cache;
   newRequire.parent = previousRequire;
+  newRequire.distDir = distDir;
+  newRequire.publicUrl = publicUrl;
+  newRequire.devServer = devServer;
+  newRequire.i = importMap;
   newRequire.register = function (id, exports) {
     modules[id] = [
       function (require, module) {
@@ -109,6 +127,10 @@
       {},
     ];
   };
+
+  // Only insert newRequire.load when it is actually used.
+  // The code in this file is linted against ES5, so dynamic import is not allowed.
+  function $parcel$resolve(url) {  url = importMap[url] || url;  return import.meta.resolve(distDir + url);}newRequire.resolve = $parcel$resolve;
 
   Object.defineProperty(newRequire, 'root', {
     get: function () {
@@ -136,22 +158,19 @@
       define(function () {
         return mainExports;
       });
-
-      // <script>
-    } else if (globalName) {
-      this[globalName] = mainExports;
     }
   }
-})({"h9Rts":[function(require,module,exports) {
+})({"2aZ6o":[function(require,module,exports,__globalThis) {
 var global = arguments[3];
 var HMR_HOST = null;
 var HMR_PORT = null;
+var HMR_SERVER_PORT = 1234;
 var HMR_SECURE = false;
-var HMR_ENV_HASH = "d6ea1d42532a7575";
+var HMR_ENV_HASH = "439701173a9199ea";
 var HMR_USE_SSE = false;
-module.bundle.HMR_BUNDLE_ID = "6e8a5cd20fbc91cd";
+module.bundle.HMR_BUNDLE_ID = "17677af8c6396971";
 "use strict";
-/* global HMR_HOST, HMR_PORT, HMR_ENV_HASH, HMR_SECURE, HMR_USE_SSE, chrome, browser, __parcel__import__, __parcel__importScripts__, ServiceWorkerGlobalScope */ /*::
+/* global HMR_HOST, HMR_PORT, HMR_SERVER_PORT, HMR_ENV_HASH, HMR_SECURE, HMR_USE_SSE, chrome, browser, __parcel__import__, __parcel__importScripts__, ServiceWorkerGlobalScope */ /*::
 import type {
   HMRAsset,
   HMRMessage,
@@ -188,6 +207,7 @@ interface ExtensionContext {
 declare var module: {bundle: ParcelRequire, ...};
 declare var HMR_HOST: string;
 declare var HMR_PORT: string;
+declare var HMR_SERVER_PORT: string;
 declare var HMR_ENV_HASH: string;
 declare var HMR_SECURE: boolean;
 declare var HMR_USE_SSE: boolean;
@@ -197,7 +217,7 @@ declare var __parcel__import__: (string) => Promise<void>;
 declare var __parcel__importScripts__: (string) => Promise<void>;
 declare var globalThis: typeof self;
 declare var ServiceWorkerGlobalScope: Object;
-*/ var OVERLAY_ID = "__parcel__error__overlay__";
+*/ var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
 function Module(moduleName) {
     OldModule.call(this, moduleName);
@@ -216,102 +236,135 @@ function Module(moduleName) {
 }
 module.bundle.Module = Module;
 module.bundle.hotData = {};
-var checkedAssets /*: {|[string]: boolean|} */ , assetsToDispose /*: Array<[ParcelRequire, string]> */ , assetsToAccept /*: Array<[ParcelRequire, string]> */ ;
+var checkedAssets /*: {|[string]: boolean|} */ , disposedAssets /*: {|[string]: boolean|} */ , assetsToDispose /*: Array<[ParcelRequire, string]> */ , assetsToAccept /*: Array<[ParcelRequire, string]> */ , bundleNotFound = false;
 function getHostname() {
-    return HMR_HOST || (location.protocol.indexOf("http") === 0 ? location.hostname : "localhost");
+    return HMR_HOST || (typeof location !== 'undefined' && location.protocol.indexOf('http') === 0 ? location.hostname : 'localhost');
 }
 function getPort() {
-    return HMR_PORT || location.port;
+    return HMR_PORT || (typeof location !== 'undefined' ? location.port : HMR_SERVER_PORT);
 }
 // eslint-disable-next-line no-redeclare
+let WebSocket = globalThis.WebSocket;
+if (!WebSocket && typeof module.bundle.root === 'function') try {
+    // eslint-disable-next-line no-global-assign
+    WebSocket = module.bundle.root('ws');
+} catch  {
+// ignore.
+}
+var hostname = getHostname();
+var port = getPort();
+var protocol = HMR_SECURE || typeof location !== 'undefined' && location.protocol === 'https:' && ![
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0'
+].includes(hostname) ? 'wss' : 'ws';
+// eslint-disable-next-line no-redeclare
 var parent = module.bundle.parent;
-if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== "undefined") {
-    var hostname = getHostname();
-    var port = getPort();
-    var protocol = HMR_SECURE || location.protocol == "https:" && ![
-        "localhost",
-        "127.0.0.1",
-        "0.0.0.0"
-    ].includes(hostname) ? "wss" : "ws";
-    var ws;
-    if (HMR_USE_SSE) ws = new EventSource("/__parcel_hmr");
-    else try {
-        ws = new WebSocket(protocol + "://" + hostname + (port ? ":" + port : "") + "/");
-    } catch (err) {
-        if (err.message) console.error(err.message);
-        ws = {};
-    }
+if (!parent || !parent.isParcelRequire) {
     // Web extension context
-    var extCtx = typeof browser === "undefined" ? typeof chrome === "undefined" ? null : chrome : browser;
+    var extCtx = typeof browser === 'undefined' ? typeof chrome === 'undefined' ? null : chrome : browser;
     // Safari doesn't support sourceURL in error stacks.
     // eval may also be disabled via CSP, so do a quick check.
     var supportsSourceURL = false;
     try {
         (0, eval)('throw new Error("test"); //# sourceURL=test.js');
     } catch (err) {
-        supportsSourceURL = err.stack.includes("test.js");
+        supportsSourceURL = err.stack.includes('test.js');
     }
-    // $FlowFixMe
-    ws.onmessage = async function(event /*: {data: string, ...} */ ) {
-        checkedAssets = {} /*: {|[string]: boolean|} */ ;
-        assetsToAccept = [];
-        assetsToDispose = [];
-        var data /*: HMRMessage */  = JSON.parse(event.data);
-        if (data.type === "update") {
-            // Remove error overlay if there is one
-            if (typeof document !== "undefined") removeErrorOverlay();
-            let assets = data.assets.filter((asset)=>asset.envHash === HMR_ENV_HASH);
-            // Handle HMR Update
-            let handled = assets.every((asset)=>{
-                return asset.type === "css" || asset.type === "js" && hmrAcceptCheck(module.bundle.root, asset.id, asset.depsByBundle);
+    var ws;
+    if (HMR_USE_SSE) ws = new EventSource('/__parcel_hmr');
+    else try {
+        // If we're running in the dev server's node runner, listen for messages on the parent port.
+        let { workerData, parentPort } = module.bundle.root('node:worker_threads') /*: any*/ ;
+        if (workerData !== null && workerData !== void 0 && workerData.__parcel) {
+            parentPort.on('message', async (message)=>{
+                try {
+                    await handleMessage(message);
+                    parentPort.postMessage('updated');
+                } catch  {
+                    parentPort.postMessage('restart');
+                }
             });
-            if (handled) {
-                console.clear();
-                // Dispatch custom event so other runtimes (e.g React Refresh) are aware.
-                if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") window.dispatchEvent(new CustomEvent("parcelhmraccept"));
-                await hmrApplyUpdates(assets);
-                // Dispose all old assets.
-                let processedAssets = {} /*: {|[string]: boolean|} */ ;
-                for(let i = 0; i < assetsToDispose.length; i++){
-                    let id = assetsToDispose[i][1];
-                    if (!processedAssets[id]) {
-                        hmrDispose(assetsToDispose[i][0], id);
-                        processedAssets[id] = true;
-                    }
-                }
-                // Run accept callbacks. This will also re-execute other disposed assets in topological order.
-                processedAssets = {};
-                for(let i = 0; i < assetsToAccept.length; i++){
-                    let id = assetsToAccept[i][1];
-                    if (!processedAssets[id]) {
-                        hmrAccept(assetsToAccept[i][0], id);
-                        processedAssets[id] = true;
-                    }
-                }
-            } else fullReload();
+            // After the bundle has finished running, notify the dev server that the HMR update is complete.
+            queueMicrotask(()=>parentPort.postMessage('ready'));
         }
-        if (data.type === "error") {
-            // Log parcel errors to console
-            for (let ansiDiagnostic of data.diagnostics.ansi){
-                let stack = ansiDiagnostic.codeframe ? ansiDiagnostic.codeframe : ansiDiagnostic.stack;
-                console.error("\uD83D\uDEA8 [parcel]: " + ansiDiagnostic.message + "\n" + stack + "\n\n" + ansiDiagnostic.hints.join("\n"));
-            }
-            if (typeof document !== "undefined") {
-                // Render the fancy html overlay
-                removeErrorOverlay();
-                var overlay = createErrorOverlay(data.diagnostics.html);
-                // $FlowFixMe
-                document.body.appendChild(overlay);
-            }
+    } catch  {
+        if (typeof WebSocket !== 'undefined') try {
+            ws = new WebSocket(protocol + '://' + hostname + (port ? ':' + port : '') + '/');
+        } catch (err) {
+            // Ignore cloudflare workers error.
+            if (err.message && !err.message.includes('Disallowed operation called within global scope')) console.error(err.message);
         }
-    };
-    if (ws instanceof WebSocket) {
-        ws.onerror = function(e) {
-            if (e.message) console.error(e.message);
+    }
+    if (ws) {
+        // $FlowFixMe
+        ws.onmessage = async function(event /*: {data: string, ...} */ ) {
+            var data /*: HMRMessage */  = JSON.parse(event.data);
+            await handleMessage(data);
         };
-        ws.onclose = function() {
-            console.warn("[parcel] \uD83D\uDEA8 Connection to the HMR server was lost");
-        };
+        if (ws instanceof WebSocket) {
+            ws.onerror = function(e) {
+                if (e.message) console.error(e.message);
+            };
+            ws.onclose = function() {
+                console.warn("[parcel] \uD83D\uDEA8 Connection to the HMR server was lost");
+            };
+        }
+    }
+}
+async function handleMessage(data /*: HMRMessage */ ) {
+    checkedAssets = {} /*: {|[string]: boolean|} */ ;
+    disposedAssets = {} /*: {|[string]: boolean|} */ ;
+    assetsToAccept = [];
+    assetsToDispose = [];
+    bundleNotFound = false;
+    if (data.type === 'reload') fullReload();
+    else if (data.type === 'update') {
+        // Remove error overlay if there is one
+        if (typeof document !== 'undefined') removeErrorOverlay();
+        let assets = data.assets;
+        // Handle HMR Update
+        let handled = assets.every((asset)=>{
+            return asset.type === 'css' || asset.type === 'js' && hmrAcceptCheck(module.bundle.root, asset.id, asset.depsByBundle);
+        });
+        // Dispatch a custom event in case a bundle was not found. This might mean
+        // an asset on the server changed and we should reload the page. This event
+        // gives the client an opportunity to refresh without losing state
+        // (e.g. via React Server Components). If e.preventDefault() is not called,
+        // we will trigger a full page reload.
+        if (handled && bundleNotFound && assets.some((a)=>a.envHash !== HMR_ENV_HASH) && typeof window !== 'undefined' && typeof CustomEvent !== 'undefined') handled = !window.dispatchEvent(new CustomEvent('parcelhmrreload', {
+            cancelable: true
+        }));
+        if (handled) {
+            console.clear();
+            // Dispatch custom event so other runtimes (e.g React Refresh) are aware.
+            if (typeof window !== 'undefined' && typeof CustomEvent !== 'undefined') window.dispatchEvent(new CustomEvent('parcelhmraccept'));
+            await hmrApplyUpdates(assets);
+            hmrDisposeQueue();
+            // Run accept callbacks. This will also re-execute other disposed assets in topological order.
+            let processedAssets = {};
+            for(let i = 0; i < assetsToAccept.length; i++){
+                let id = assetsToAccept[i][1];
+                if (!processedAssets[id]) {
+                    hmrAccept(assetsToAccept[i][0], id);
+                    processedAssets[id] = true;
+                }
+            }
+        } else fullReload();
+    }
+    if (data.type === 'error') {
+        // Log parcel errors to console
+        for (let ansiDiagnostic of data.diagnostics.ansi){
+            let stack = ansiDiagnostic.codeframe ? ansiDiagnostic.codeframe : ansiDiagnostic.stack;
+            console.error("\uD83D\uDEA8 [parcel]: " + ansiDiagnostic.message + '\n' + stack + '\n\n' + ansiDiagnostic.hints.join('\n'));
+        }
+        if (typeof document !== 'undefined') {
+            // Render the fancy html overlay
+            removeErrorOverlay();
+            var overlay = createErrorOverlay(data.diagnostics.html);
+            // $FlowFixMe
+            document.body.appendChild(overlay);
+        }
     }
 }
 function removeErrorOverlay() {
@@ -322,15 +375,15 @@ function removeErrorOverlay() {
     }
 }
 function createErrorOverlay(diagnostics) {
-    var overlay = document.createElement("div");
+    var overlay = document.createElement('div');
     overlay.id = OVERLAY_ID;
     let errorHTML = '<div style="background: black; opacity: 0.85; font-size: 16px; color: white; position: fixed; height: 100%; width: 100%; top: 0px; left: 0px; padding: 30px; font-family: Menlo, Consolas, monospace; z-index: 9999;">';
     for (let diagnostic of diagnostics){
         let stack = diagnostic.frames.length ? diagnostic.frames.reduce((p, frame)=>{
             return `${p}
-<a href="/__parcel_launch_editor?file=${encodeURIComponent(frame.location)}" style="text-decoration: underline; color: #888" onclick="fetch(this.href); return false">${frame.location}</a>
+<a href="${protocol === 'wss' ? 'https' : 'http'}://${hostname}:${port}/__parcel_launch_editor?file=${encodeURIComponent(frame.location)}" style="text-decoration: underline; color: #888" onclick="fetch(this.href); return false">${frame.location}</a>
 ${frame.code}`;
-        }, "") : diagnostic.stack;
+        }, '') : diagnostic.stack;
         errorHTML += `
       <div>
         <div style="font-size: 18px; font-weight: bold; margin-top: 20px;">
@@ -338,19 +391,25 @@ ${frame.code}`;
         </div>
         <pre>${stack}</pre>
         <div>
-          ${diagnostic.hints.map((hint)=>"<div>\uD83D\uDCA1 " + hint + "</div>").join("")}
+          ${diagnostic.hints.map((hint)=>"<div>\uD83D\uDCA1 " + hint + '</div>').join('')}
         </div>
-        ${diagnostic.documentation ? `<div>\u{1F4DD} <a style="color: violet" href="${diagnostic.documentation}" target="_blank">Learn more</a></div>` : ""}
+        ${diagnostic.documentation ? `<div>\u{1F4DD} <a style="color: violet" href="${diagnostic.documentation}" target="_blank">Learn more</a></div>` : ''}
       </div>
     `;
     }
-    errorHTML += "</div>";
+    errorHTML += '</div>';
     overlay.innerHTML = errorHTML;
     return overlay;
 }
 function fullReload() {
-    if ("reload" in location) location.reload();
-    else if (extCtx && extCtx.runtime && extCtx.runtime.reload) extCtx.runtime.reload();
+    if (typeof location !== 'undefined' && 'reload' in location) location.reload();
+    else if (typeof extCtx !== 'undefined' && extCtx && extCtx.runtime && extCtx.runtime.reload) extCtx.runtime.reload();
+    else try {
+        let { workerData, parentPort } = module.bundle.root('node:worker_threads') /*: any*/ ;
+        if (workerData !== null && workerData !== void 0 && workerData.__parcel) parentPort.postMessage('restart');
+    } catch (err) {
+        console.error("[parcel] \u26A0\uFE0F An HMR update was not accepted. Please restart the process.");
+    }
 }
 function getParents(bundle, id) /*: Array<[ParcelRequire, string]> */ {
     var modules = bundle.modules;
@@ -368,28 +427,28 @@ function getParents(bundle, id) /*: Array<[ParcelRequire, string]> */ {
     return parents;
 }
 function updateLink(link) {
-    var href = link.getAttribute("href");
+    var href = link.getAttribute('href');
     if (!href) return;
     var newLink = link.cloneNode();
     newLink.onload = function() {
         if (link.parentNode !== null) // $FlowFixMe
         link.parentNode.removeChild(link);
     };
-    newLink.setAttribute("href", // $FlowFixMe
-    href.split("?")[0] + "?" + Date.now());
+    newLink.setAttribute('href', // $FlowFixMe
+    href.split('?')[0] + '?' + Date.now());
     // $FlowFixMe
     link.parentNode.insertBefore(newLink, link.nextSibling);
 }
 var cssTimeout = null;
 function reloadCSS() {
-    if (cssTimeout) return;
+    if (cssTimeout || typeof document === 'undefined') return;
     cssTimeout = setTimeout(function() {
         var links = document.querySelectorAll('link[rel="stylesheet"]');
         for(var i = 0; i < links.length; i++){
             // $FlowFixMe[incompatible-type]
-            var href /*: string */  = links[i].getAttribute("href");
+            var href /*: string */  = links[i].getAttribute('href');
             var hostname = getHostname();
-            var servedFromHMRServer = hostname === "localhost" ? new RegExp("^(https?:\\/\\/(0.0.0.0|127.0.0.1)|localhost):" + getPort()).test(href) : href.indexOf(hostname + ":" + getPort());
+            var servedFromHMRServer = hostname === 'localhost' ? new RegExp('^(https?:\\/\\/(0.0.0.0|127.0.0.1)|localhost):' + getPort()).test(href) : href.indexOf(hostname + ':' + getPort());
             var absolute = /^https?:\/\//i.test(href) && href.indexOf(location.origin) !== 0 && !servedFromHMRServer;
             if (!absolute) updateLink(links[i]);
         }
@@ -397,23 +456,23 @@ function reloadCSS() {
     }, 50);
 }
 function hmrDownload(asset) {
-    if (asset.type === "js") {
-        if (typeof document !== "undefined") {
-            let script = document.createElement("script");
-            script.src = asset.url + "?t=" + Date.now();
-            if (asset.outputFormat === "esmodule") script.type = "module";
+    if (asset.type === 'js') {
+        if (typeof document !== 'undefined') {
+            let script = document.createElement('script');
+            script.src = asset.url + '?t=' + Date.now();
+            if (asset.outputFormat === 'esmodule') script.type = 'module';
             return new Promise((resolve, reject)=>{
                 var _document$head;
                 script.onload = ()=>resolve(script);
                 script.onerror = reject;
                 (_document$head = document.head) === null || _document$head === void 0 || _document$head.appendChild(script);
             });
-        } else if (typeof importScripts === "function") {
+        } else if (typeof importScripts === 'function') {
             // Worker scripts
-            if (asset.outputFormat === "esmodule") return import(asset.url + "?t=" + Date.now());
+            if (asset.outputFormat === 'esmodule') return import(asset.url + '?t=' + Date.now());
             else return new Promise((resolve, reject)=>{
                 try {
-                    importScripts(asset.url + "?t=" + Date.now());
+                    importScripts(asset.url + '?t=' + Date.now());
                     resolve();
                 } catch (err) {
                     reject(err);
@@ -437,7 +496,7 @@ async function hmrApplyUpdates(assets) {
                 var _hmrDownload;
                 return (_hmrDownload = hmrDownload(asset)) === null || _hmrDownload === void 0 ? void 0 : _hmrDownload.catch((err)=>{
                     // Web extension fix
-                    if (extCtx && extCtx.runtime && extCtx.runtime.getManifest().manifest_version == 3 && typeof ServiceWorkerGlobalScope != "undefined" && global instanceof ServiceWorkerGlobalScope) {
+                    if (extCtx && extCtx.runtime && extCtx.runtime.getManifest().manifest_version == 3 && typeof ServiceWorkerGlobalScope != 'undefined' && global instanceof ServiceWorkerGlobalScope) {
                         extCtx.runtime.reload();
                         return;
                     }
@@ -462,8 +521,8 @@ async function hmrApplyUpdates(assets) {
 function hmrApply(bundle /*: ParcelRequire */ , asset /*:  HMRAsset */ ) {
     var modules = bundle.modules;
     if (!modules) return;
-    if (asset.type === "css") reloadCSS();
-    else if (asset.type === "js") {
+    if (asset.type === 'css') reloadCSS();
+    else if (asset.type === 'js') {
         let deps = asset.depsByBundle[bundle.HMR_BUNDLE_ID];
         if (deps) {
             if (modules[asset.id]) {
@@ -485,7 +544,10 @@ function hmrApply(bundle /*: ParcelRequire */ , asset /*:  HMRAsset */ ) {
                 fn,
                 deps
             ];
-        } else if (bundle.parent) hmrApply(bundle.parent, asset);
+        }
+        // Always traverse to the parent bundle, even if we already replaced the asset in this bundle.
+        // This is required in case modules are duplicated. We need to ensure all instances have the updated code.
+        if (bundle.parent) hmrApply(bundle.parent, asset);
     }
 }
 function hmrDelete(bundle, id) {
@@ -509,6 +571,7 @@ function hmrDelete(bundle, id) {
     } else if (bundle.parent) hmrDelete(bundle.parent, id);
 }
 function hmrAcceptCheck(bundle /*: ParcelRequire */ , id /*: string */ , depsByBundle /*: ?{ [string]: { [string]: string } }*/ ) {
+    checkedAssets = {};
     if (hmrAcceptCheckOne(bundle, id, depsByBundle)) return true;
     // Traverse parents breadth first. All possible ancestries must accept the HMR update, or we'll reload.
     let parents = getParents(module.bundle.root, id);
@@ -518,7 +581,7 @@ function hmrAcceptCheck(bundle /*: ParcelRequire */ , id /*: string */ , depsByB
         let a = hmrAcceptCheckOne(v[0], v[1], null);
         if (a) // If this parent accepts, stop traversing upward, but still consider siblings.
         accepted = true;
-        else {
+        else if (a !== null) {
             // Otherwise, queue the parents in the next level upward.
             let p = getParents(module.bundle.root, v[1]);
             if (p.length === 0) {
@@ -537,23 +600,39 @@ function hmrAcceptCheckOne(bundle /*: ParcelRequire */ , id /*: string */ , deps
     if (depsByBundle && !depsByBundle[bundle.HMR_BUNDLE_ID]) {
         // If we reached the root bundle without finding where the asset should go,
         // there's nothing to do. Mark as "accepted" so we don't reload the page.
-        if (!bundle.parent) return true;
-        return hmrAcceptCheck(bundle.parent, id, depsByBundle);
+        if (!bundle.parent) {
+            bundleNotFound = true;
+            return true;
+        }
+        return hmrAcceptCheckOne(bundle.parent, id, depsByBundle);
     }
-    if (checkedAssets[id]) return true;
+    if (checkedAssets[id]) return null;
     checkedAssets[id] = true;
     var cached = bundle.cache[id];
+    if (!cached) return true;
     assetsToDispose.push([
         bundle,
         id
     ]);
-    if (!cached || cached.hot && cached.hot._acceptCallbacks.length) {
+    if (cached && cached.hot && cached.hot._acceptCallbacks.length) {
         assetsToAccept.push([
             bundle,
             id
         ]);
         return true;
     }
+    return false;
+}
+function hmrDisposeQueue() {
+    // Dispose all old assets.
+    for(let i = 0; i < assetsToDispose.length; i++){
+        let id = assetsToDispose[i][1];
+        if (!disposedAssets[id]) {
+            hmrDispose(assetsToDispose[i][0], id);
+            disposedAssets[id] = true;
+        }
+    }
+    assetsToDispose = [];
 }
 function hmrDispose(bundle /*: ParcelRequire */ , id /*: string */ ) {
     var cached = bundle.cache[id];
@@ -569,26 +648,32 @@ function hmrAccept(bundle /*: ParcelRequire */ , id /*: string */ ) {
     bundle(id);
     // Run the accept callbacks in the new version of the module.
     var cached = bundle.cache[id];
-    if (cached && cached.hot && cached.hot._acceptCallbacks.length) cached.hot._acceptCallbacks.forEach(function(cb) {
-        var assetsToAlsoAccept = cb(function() {
-            return getParents(module.bundle.root, id);
-        });
-        if (assetsToAlsoAccept && assetsToAccept.length) {
-            assetsToAlsoAccept.forEach(function(a) {
-                hmrDispose(a[0], a[1]);
+    if (cached && cached.hot && cached.hot._acceptCallbacks.length) {
+        let assetsToAlsoAccept = [];
+        cached.hot._acceptCallbacks.forEach(function(cb) {
+            let additionalAssets = cb(function() {
+                return getParents(module.bundle.root, id);
             });
-            // $FlowFixMe[method-unbinding]
-            assetsToAccept.push.apply(assetsToAccept, assetsToAlsoAccept);
+            if (Array.isArray(additionalAssets) && additionalAssets.length) assetsToAlsoAccept.push(...additionalAssets);
+        });
+        if (assetsToAlsoAccept.length) {
+            let handled = assetsToAlsoAccept.every(function(a) {
+                return hmrAcceptCheck(a[0], a[1]);
+            });
+            if (!handled) return fullReload();
+            hmrDisposeQueue();
         }
-    });
+    }
 }
 
-},{}],"fFaKF":[function(require,module,exports) {
+},{}],"8JWvp":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 var _p5 = require("p5");
 var _p5Default = parcelHelpers.interopDefault(_p5);
 var _cameraUtils = require("./cameraUtils");
 var _utils = require("./utils");
+var _monaspaceNeonWideExtraLightOtf = require("../assets/fonts/MonaspaceNeon-WideExtraLight.otf");
+var _monaspaceNeonWideExtraLightOtfDefault = parcelHelpers.interopDefault(_monaspaceNeonWideExtraLightOtf);
 new (0, _p5Default.default)((sk)=>{
     // ---- SETTINGS
     let numSlices = 12;
@@ -596,11 +681,19 @@ new (0, _p5Default.default)((sk)=>{
     let capture;
     let sliceWidth, sliceHeight, sliceStartX, sliceStartY;
     let sliceSlider;
+    let customFont;
+    let startTime;
+    let experienceStarted = false;
+    let fadeStartTime;
     const buffer = [];
     sk.setup = ()=>{
         sk.createCanvas(sk.windowWidth, sk.windowHeight);
         capture = (0, _cameraUtils.initializeCamCapture)(sk);
         sk.colorMode(sk.HSL, 360, 100, 100, 100);
+        // Load custom font
+        customFont = sk.loadFont((0, _monaspaceNeonWideExtraLightOtfDefault.default));
+        // Initialize timer
+        startTime = sk.millis();
         sliceSlider = document.getElementById("sliceSlider");
         sliceWidth = sk.width / numSlices;
         sliceHeight = sk.height;
@@ -608,7 +701,34 @@ new (0, _p5Default.default)((sk)=>{
         sliceStartY = 0;
     };
     sk.draw = ()=>{
-        sk.background("red");
+        sk.background("black");
+        let elapsedTime = sk.millis() - startTime;
+        let isExperienceReady = capture && capture.loadedmetadata;
+        if (elapsedTime < 2000 || !isExperienceReady) {
+            sk.push();
+            sk.fill(255, 255, 255, 255);
+            if (customFont) sk.textFont(customFont);
+            sk.textAlign(sk.CENTER);
+            sk.textSize(32);
+            sk.text("WALKING PIECE", sk.width / 2, sk.height / 2);
+            sk.pop();
+            return;
+        }
+        if (!fadeStartTime) fadeStartTime = sk.millis();
+        // Fade for 1 second after ready
+        if (sk.millis() - fadeStartTime < 1000) {
+            let fadeAlpha = sk.map(sk.millis() - fadeStartTime, 0, 1000, 255, 0);
+            sk.push();
+            sk.fill(255, 255, 255, fadeAlpha);
+            if (customFont) sk.textFont(customFont);
+            sk.textAlign(sk.CENTER);
+            sk.textSize(32);
+            sk.text("WALKING PIECE", sk.width / 2, sk.height / 2);
+            sk.pop();
+            return;
+        }
+        // Set experience as started after resources are ready
+        experienceStarted = true;
         numSlices = parseInt(sliceSlider.value);
         sliceWidth = sk.width / numSlices;
         if (numSlices > 72 && numSlices < 120) delay = 4;
@@ -636,7 +756,7 @@ new (0, _p5Default.default)((sk)=>{
     (0, _utils.saveCanvasAsPNG)(sk);
 });
 
-},{"p5":"7Uk5U","./cameraUtils":"2RWfO","./utils":"bVlgj","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7Uk5U":[function(require,module,exports) {
+},{"p5":"6IEby","./cameraUtils":"gm6zw","./utils":"1X9hu","../assets/fonts/MonaspaceNeon-WideExtraLight.otf":"4FU6e","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"6IEby":[function(require,module,exports,__globalThis) {
 /*! p5.js v1.9.4 May 21, 2024 */ var global = arguments[3];
 !function(e1) {
     module.exports = e1();
@@ -3274,7 +3394,7 @@ new (0, _p5Default.default)((sk)=>{
                         n = document.domain && new ActiveXObject("htmlfile");
                     } catch (e1) {}
                     m = n ? ((e1 = n).write(p("")), e1.close(), t = e1.parentWindow.Object, e1 = null, t) : (e1 = c("iframe"), t = "java" + h + ":", e1.style.display = "none", u.appendChild(e1), e1.src = String(t), (t = e1.contentWindow.document).open(), t.write(p("document.F=Object")), t.close(), t.F);
-                    for(var e2, t, r = a.length; r--;)delete m[d][a[r]];
+                    for(var e1, t, r = a.length; r--;)delete m[d][a[r]];
                     return m();
                 };
                 l[f] = !0, t.exports = Object.create || function(e1, t) {
@@ -21690,7 +21810,7 @@ new (0, _p5Default.default)((sk)=>{
                         if (1 !== t && console.log("\uD83C\uDF38 p5.js says: Instancing is only supported in WebGL2 mode"), 0 === c.length) return this;
                         if (!this._renderer._doStroke && !this._renderer._doFill) return this;
                         t = e1 === l.CLOSE;
-                        t && !p && c.push(c[0]), this._renderer.endShape(e1, c, s, h, f, p, n), m = (p = f = h = s = !1, true), t && c.pop();
+                        t && !p && c.push(c[0]), this._renderer.endShape(e1, c, s, h, f, p, n), m = !(p = f = h = s = !1), t && c.pop();
                     }
                     return this;
                 }, a.default.prototype.quadraticVertex = function() {
@@ -24348,8 +24468,8 @@ new (0, _p5Default.default)((sk)=>{
                     }), s;
                 }, v.default.prototype.loadTable = function(t) {
                     var f, r, p, e1 = [], m = !1, o = t.substring(t.lastIndexOf(".") + 1, t.length);
-                    "csv" === o ? p = "," : "ssv" === o ? p = ";" : "tsv" === o && (p = "	");
-                    for(var n = 1; n < arguments.length; n++)"function" == typeof arguments[n] ? void 0 === f ? f = arguments[n] : void 0 === r && (r = arguments[n]) : "string" == typeof arguments[n] && (e1.push(arguments[n]), "header" === arguments[n] && (m = !0), "csv" === arguments[n] ? p = "," : "ssv" === arguments[n] ? p = ";" : "tsv" === arguments[n] && (p = "	"));
+                    "csv" === o ? p = "," : "ssv" === o ? p = ";" : "tsv" === o && (p = "\t");
+                    for(var n = 1; n < arguments.length; n++)"function" == typeof arguments[n] ? void 0 === f ? f = arguments[n] : void 0 === r && (r = arguments[n]) : "string" == typeof arguments[n] && (e1.push(arguments[n]), "header" === arguments[n] && (m = !0), "csv" === arguments[n] ? p = "," : "ssv" === arguments[n] ? p = ";" : "tsv" === arguments[n] && (p = "\t"));
                     var y = new v.default.Table, g = this;
                     return this.httpDo(t, "GET", "table", function(e1) {
                         for(var t, r, o = {}, n = 0, s = [], i = 0, a = null, l = function() {
@@ -24505,7 +24625,7 @@ new (0, _p5Default.default)((sk)=>{
                     n.close(), n.clear();
                 }, v.default.prototype.saveTable = function(e1, t, r) {
                     v.default._validateParameters("saveTable", arguments), o = void 0 === r ? t.substring(t.lastIndexOf(".") + 1, t.length) : r;
-                    var o, n = this.createWriter(t, o), s = e1.columns, i = "tsv" === o ? "	" : ",";
+                    var o, n = this.createWriter(t, o), s = e1.columns, i = "tsv" === o ? "\t" : ",";
                     if ("html" !== o) {
                         if ("0" !== s[0]) {
                             for(var a = 0; a < s.length; a++)a < s.length - 1 ? n.write(s[a] + i) : n.write(s[a]);
@@ -24545,7 +24665,7 @@ new (0, _p5Default.default)((sk)=>{
                     var o, t = i(t, r), r = t[0];
                     e1 instanceof Blob ? n.default.saveAs(e1, r) : ((o = document.createElement("a")).href = e1, o.download = r, o.onclick = function(e1) {
                         document.body.removeChild(e1.target), e1.stopPropagation();
-                    }, o.style.display = "none", document.body.appendChild(o), v.default.prototype._isSafari() && (e1 = (e1 = 'Hello, Safari user! To download this file...\n1. Go to File --> Save As.\n2. Choose "Page Source" as the Format.\n') + '3. Name it with this extension: ."'.concat(t[1], '"'), alert(e1)), o.click());
+                    }, o.style.display = "none", document.body.appendChild(o), v.default.prototype._isSafari() && (e1 = (e1 = 'Hello, Safari user! To download this file...\n1. Go to File --\x3e Save As.\n2. Choose "Page Source" as the Format.\n') + '3. Name it with this extension: ."'.concat(t[1], '"'), alert(e1)), o.click());
                 }, v.default.prototype._checkFileExtension = i, v.default.prototype._isSafari = function() {
                     return window.HTMLElement.toString().includes("Constructor");
                 };
@@ -26226,10 +26346,10 @@ new (0, _p5Default.default)((sk)=>{
                                 t.x,
                                 t.y
                             ];
-                            switch((e1[0] in {
+                            switch(e1[0] in {
                                 T: 1,
                                 Q: 1
-                            }) || (t.qx = t.qy = null), e1[0]){
+                            } || (t.qx = t.qy = null), e1[0]){
                                 case "M":
                                     t.X = e1[1], t.Y = e1[2];
                                     break;
@@ -26582,7 +26702,7 @@ new (0, _p5Default.default)((sk)=>{
                                 for(var l, u, c, d = 0; d < a.length; d++){
                                     var h = 0;
                                     t = s;
-                                    for(var f = (f = a[d]).replace("	", "  "), p = this._getGlyphs(f), m = 0; m < p.length; m++){
+                                    for(var f = (f = a[d]).replace("\t", "  "), p = this._getGlyphs(f), m = 0; m < p.length; m++){
                                         if (u = f, !((c = p)[l = m].name && "space" === c[l].name || u.length === c.length && " " === u[l])) for(var y = function(e1) {
                                             for(var t, r = [], o = 0; o < e1.length; o++)"M" === e1[o].type && (t && r.push(t), t = []), t.push(function(e1) {
                                                 var t = [
@@ -30697,7 +30817,7 @@ new (0, _p5Default.default)((sk)=>{
                 function j(e1, t) {
                     T += "#define STROKE_JOIN_".concat(e1, " ").concat(t, "\n"), S[l[e1]] = t;
                 }
-                var x, w = {}, S = {}, T = "", e1 = (s("ROUND", 0), s("PROJECT", 1), s("SQUARE", 2), j("ROUND", 0), j("MITER", 1), j("BEVEL", 2), '#define PI 3.141592\n\nprecision highp float;\nprecision highp int;\n\nuniform mat4 uViewMatrix;\n\nuniform bool uUseLighting;\n\nuniform int uAmbientLightCount;\nuniform vec3 uAmbientColor[5];\nuniform mat3 uCameraRotation;\nuniform int uDirectionalLightCount;\nuniform vec3 uLightingDirection[5];\nuniform vec3 uDirectionalDiffuseColors[5];\nuniform vec3 uDirectionalSpecularColors[5];\n\nuniform int uPointLightCount;\nuniform vec3 uPointLightLocation[5];\nuniform vec3 uPointLightDiffuseColors[5];	\nuniform vec3 uPointLightSpecularColors[5];\n\nuniform int uSpotLightCount;\nuniform float uSpotLightAngle[5];\nuniform float uSpotLightConc[5];\nuniform vec3 uSpotLightDiffuseColors[5];\nuniform vec3 uSpotLightSpecularColors[5];\nuniform vec3 uSpotLightLocation[5];\nuniform vec3 uSpotLightDirection[5];\n\nuniform bool uSpecular;\nuniform float uShininess;\nuniform float metallic;\n\nuniform float uConstantAttenuation;\nuniform float uLinearAttenuation;\nuniform float uQuadraticAttenuation;\n\n// setting from  _setImageLightUniforms()\n// boolean to initiate the calculateImageDiffuse and calculateImageSpecular\nuniform bool uUseImageLight;\n// texture for use in calculateImageDiffuse\nuniform sampler2D environmentMapDiffused;\n// texture for use in calculateImageSpecular\nuniform sampler2D environmentMapSpecular;\n// roughness for use in calculateImageSpecular\nuniform float levelOfDetail;\n\nconst float specularFactor = 2.0;\nconst float diffuseFactor = 0.73;\n\nstruct LightResult {\n  float specular;\n  float diffuse;\n};\n\nfloat _phongSpecular(\n  vec3 lightDirection,\n  vec3 viewDirection,\n  vec3 surfaceNormal,\n  float shininess) {\n\n  vec3 R = reflect(lightDirection, surfaceNormal);\n  return pow(max(0.0, dot(R, viewDirection)), shininess);\n}\n\nfloat _lambertDiffuse(vec3 lightDirection, vec3 surfaceNormal) {\n  return max(0.0, dot(-lightDirection, surfaceNormal));\n}\n\nLightResult _light(vec3 viewDirection, vec3 normal, vec3 lightVector) {\n\n  vec3 lightDir = normalize(lightVector);\n\n  //compute our diffuse & specular terms\n  LightResult lr;\n  float specularIntensity = mix(1.0, 0.4, metallic);\n  float diffuseIntensity = mix(1.0, 0.1, metallic);\n  if (uSpecular)\n    lr.specular = (_phongSpecular(lightDir, viewDirection, normal, uShininess)) * specularIntensity;\n    lr.diffuse = _lambertDiffuse(lightDir, normal) * diffuseIntensity;\n  return lr;\n}\n\n// converts the range of "value" from [min1 to max1] to [min2 to max2]\nfloat map(float value, float min1, float max1, float min2, float max2) {\n  return min2 + (value - min1) * (max2 - min2) / (max1 - min1);\n}\n\nvec2 mapTextureToNormal( vec3 v ){\n  // x = r sin(phi) cos(theta)   \n  // y = r cos(phi)  \n  // z = r sin(phi) sin(theta)\n  float phi = acos( v.y );\n  // if phi is 0, then there are no x, z components\n  float theta = 0.0;\n  // else \n  theta = acos(v.x / sin(phi));\n  float sinTheta = v.z / sin(phi);\n  if (sinTheta < 0.0) {\n    // Turn it into -theta, but in the 0-2PI range\n    theta = 2.0 * PI - theta;\n  }\n  theta = theta / (2.0 * 3.14159);\n  phi = phi / 3.14159 ;\n  \n  vec2 angles = vec2( fract(theta + 0.25), 1.0 - phi );\n  return angles;\n}\n\n\nvec3 calculateImageDiffuse( vec3 vNormal, vec3 vViewPosition ){\n  // make 2 seperate builds \n  vec3 worldCameraPosition =  vec3(0.0, 0.0, 0.0);  // hardcoded world camera position\n  vec3 worldNormal = normalize(vNormal * uCameraRotation);\n  vec2 newTexCoor = mapTextureToNormal( worldNormal );\n  vec4 texture = TEXTURE( environmentMapDiffused, newTexCoor );\n  // this is to make the darker sections more dark\n  // png and jpg usually flatten the brightness so it is to reverse that\n  return mix(smoothstep(vec3(0.0), vec3(1.0), texture.xyz), vec3(0.0), metallic);\n}\n\nvec3 calculateImageSpecular( vec3 vNormal, vec3 vViewPosition ){\n  vec3 worldCameraPosition =  vec3(0.0, 0.0, 0.0);\n  vec3 worldNormal = normalize(vNormal);\n  vec3 lightDirection = normalize( vViewPosition - worldCameraPosition );\n  vec3 R = reflect(lightDirection, worldNormal) * uCameraRotation;\n  vec2 newTexCoor = mapTextureToNormal( R );\n#ifdef WEBGL2\n  vec4 outColor = textureLod(environmentMapSpecular, newTexCoor, levelOfDetail);\n#else\n  vec4 outColor = TEXTURE(environmentMapSpecular, newTexCoor);\n#endif\n  // this is to make the darker sections more dark\n  // png and jpg usually flatten the brightness so it is to reverse that\n  return mix(\n    pow(outColor.xyz, vec3(10)),\n    pow(outColor.xyz, vec3(1.2)),\n    metallic \n  );\n}\n\nvoid totalLight(\n  vec3 modelPosition,\n  vec3 normal,\n  out vec3 totalDiffuse,\n  out vec3 totalSpecular\n) {\n\n  totalSpecular = vec3(0.0);\n\n  if (!uUseLighting) {\n    totalDiffuse = vec3(1.0);\n    return;\n  }\n\n  totalDiffuse = vec3(0.0);\n\n  vec3 viewDirection = normalize(-modelPosition);\n\n  for (int j = 0; j < 5; j++) {\n    if (j < uDirectionalLightCount) {\n      vec3 lightVector = (uViewMatrix * vec4(uLightingDirection[j], 0.0)).xyz;\n      vec3 lightColor = uDirectionalDiffuseColors[j];\n      vec3 specularColor = uDirectionalSpecularColors[j];\n      LightResult result = _light(viewDirection, normal, lightVector);\n      totalDiffuse += result.diffuse * lightColor;\n      totalSpecular += result.specular * lightColor * specularColor;\n    }\n\n    if (j < uPointLightCount) {\n      vec3 lightPosition = (uViewMatrix * vec4(uPointLightLocation[j], 1.0)).xyz;\n      vec3 lightVector = modelPosition - lightPosition;\n      //calculate attenuation\n      float lightDistance = length(lightVector);\n      float lightFalloff = 1.0 / (uConstantAttenuation + lightDistance * uLinearAttenuation + (lightDistance * lightDistance) * uQuadraticAttenuation);\n      vec3 lightColor = lightFalloff * uPointLightDiffuseColors[j];\n      vec3 specularColor = lightFalloff * uPointLightSpecularColors[j];\n\n      LightResult result = _light(viewDirection, normal, lightVector);\n      totalDiffuse += result.diffuse * lightColor;\n      totalSpecular += result.specular * lightColor * specularColor;\n    }\n\n    if(j < uSpotLightCount) {\n      vec3 lightPosition = (uViewMatrix * vec4(uSpotLightLocation[j], 1.0)).xyz;\n      vec3 lightVector = modelPosition - lightPosition;\n    \n      float lightDistance = length(lightVector);\n      float lightFalloff = 1.0 / (uConstantAttenuation + lightDistance * uLinearAttenuation + (lightDistance * lightDistance) * uQuadraticAttenuation);\n\n      vec3 lightDirection = (uViewMatrix * vec4(uSpotLightDirection[j], 0.0)).xyz;\n      float spotDot = dot(normalize(lightVector), normalize(lightDirection));\n      float spotFalloff;\n      if(spotDot < uSpotLightAngle[j]) {\n        spotFalloff = 0.0;\n      }\n      else {\n        spotFalloff = pow(spotDot, uSpotLightConc[j]);\n      }\n      lightFalloff *= spotFalloff;\n\n      vec3 lightColor = uSpotLightDiffuseColors[j];\n      vec3 specularColor = uSpotLightSpecularColors[j];\n     \n      LightResult result = _light(viewDirection, normal, lightVector);\n      \n      totalDiffuse += result.diffuse * lightColor * lightFalloff;\n      totalSpecular += result.specular * lightColor * specularColor * lightFalloff;\n    }\n  }\n\n  if( uUseImageLight ){\n    totalDiffuse += calculateImageDiffuse(normal, modelPosition);\n    totalSpecular += calculateImageSpecular(normal, modelPosition);\n  }\n\n  totalDiffuse *= diffuseFactor;\n  totalSpecular *= specularFactor;\n}\n'), E = {
+                var x, w = {}, S = {}, T = "", e1 = (s("ROUND", 0), s("PROJECT", 1), s("SQUARE", 2), j("ROUND", 0), j("MITER", 1), j("BEVEL", 2), '#define PI 3.141592\n\nprecision highp float;\nprecision highp int;\n\nuniform mat4 uViewMatrix;\n\nuniform bool uUseLighting;\n\nuniform int uAmbientLightCount;\nuniform vec3 uAmbientColor[5];\nuniform mat3 uCameraRotation;\nuniform int uDirectionalLightCount;\nuniform vec3 uLightingDirection[5];\nuniform vec3 uDirectionalDiffuseColors[5];\nuniform vec3 uDirectionalSpecularColors[5];\n\nuniform int uPointLightCount;\nuniform vec3 uPointLightLocation[5];\nuniform vec3 uPointLightDiffuseColors[5];\t\nuniform vec3 uPointLightSpecularColors[5];\n\nuniform int uSpotLightCount;\nuniform float uSpotLightAngle[5];\nuniform float uSpotLightConc[5];\nuniform vec3 uSpotLightDiffuseColors[5];\nuniform vec3 uSpotLightSpecularColors[5];\nuniform vec3 uSpotLightLocation[5];\nuniform vec3 uSpotLightDirection[5];\n\nuniform bool uSpecular;\nuniform float uShininess;\nuniform float metallic;\n\nuniform float uConstantAttenuation;\nuniform float uLinearAttenuation;\nuniform float uQuadraticAttenuation;\n\n// setting from  _setImageLightUniforms()\n// boolean to initiate the calculateImageDiffuse and calculateImageSpecular\nuniform bool uUseImageLight;\n// texture for use in calculateImageDiffuse\nuniform sampler2D environmentMapDiffused;\n// texture for use in calculateImageSpecular\nuniform sampler2D environmentMapSpecular;\n// roughness for use in calculateImageSpecular\nuniform float levelOfDetail;\n\nconst float specularFactor = 2.0;\nconst float diffuseFactor = 0.73;\n\nstruct LightResult {\n  float specular;\n  float diffuse;\n};\n\nfloat _phongSpecular(\n  vec3 lightDirection,\n  vec3 viewDirection,\n  vec3 surfaceNormal,\n  float shininess) {\n\n  vec3 R = reflect(lightDirection, surfaceNormal);\n  return pow(max(0.0, dot(R, viewDirection)), shininess);\n}\n\nfloat _lambertDiffuse(vec3 lightDirection, vec3 surfaceNormal) {\n  return max(0.0, dot(-lightDirection, surfaceNormal));\n}\n\nLightResult _light(vec3 viewDirection, vec3 normal, vec3 lightVector) {\n\n  vec3 lightDir = normalize(lightVector);\n\n  //compute our diffuse & specular terms\n  LightResult lr;\n  float specularIntensity = mix(1.0, 0.4, metallic);\n  float diffuseIntensity = mix(1.0, 0.1, metallic);\n  if (uSpecular)\n    lr.specular = (_phongSpecular(lightDir, viewDirection, normal, uShininess)) * specularIntensity;\n    lr.diffuse = _lambertDiffuse(lightDir, normal) * diffuseIntensity;\n  return lr;\n}\n\n// converts the range of "value" from [min1 to max1] to [min2 to max2]\nfloat map(float value, float min1, float max1, float min2, float max2) {\n  return min2 + (value - min1) * (max2 - min2) / (max1 - min1);\n}\n\nvec2 mapTextureToNormal( vec3 v ){\n  // x = r sin(phi) cos(theta)   \n  // y = r cos(phi)  \n  // z = r sin(phi) sin(theta)\n  float phi = acos( v.y );\n  // if phi is 0, then there are no x, z components\n  float theta = 0.0;\n  // else \n  theta = acos(v.x / sin(phi));\n  float sinTheta = v.z / sin(phi);\n  if (sinTheta < 0.0) {\n    // Turn it into -theta, but in the 0-2PI range\n    theta = 2.0 * PI - theta;\n  }\n  theta = theta / (2.0 * 3.14159);\n  phi = phi / 3.14159 ;\n  \n  vec2 angles = vec2( fract(theta + 0.25), 1.0 - phi );\n  return angles;\n}\n\n\nvec3 calculateImageDiffuse( vec3 vNormal, vec3 vViewPosition ){\n  // make 2 seperate builds \n  vec3 worldCameraPosition =  vec3(0.0, 0.0, 0.0);  // hardcoded world camera position\n  vec3 worldNormal = normalize(vNormal * uCameraRotation);\n  vec2 newTexCoor = mapTextureToNormal( worldNormal );\n  vec4 texture = TEXTURE( environmentMapDiffused, newTexCoor );\n  // this is to make the darker sections more dark\n  // png and jpg usually flatten the brightness so it is to reverse that\n  return mix(smoothstep(vec3(0.0), vec3(1.0), texture.xyz), vec3(0.0), metallic);\n}\n\nvec3 calculateImageSpecular( vec3 vNormal, vec3 vViewPosition ){\n  vec3 worldCameraPosition =  vec3(0.0, 0.0, 0.0);\n  vec3 worldNormal = normalize(vNormal);\n  vec3 lightDirection = normalize( vViewPosition - worldCameraPosition );\n  vec3 R = reflect(lightDirection, worldNormal) * uCameraRotation;\n  vec2 newTexCoor = mapTextureToNormal( R );\n#ifdef WEBGL2\n  vec4 outColor = textureLod(environmentMapSpecular, newTexCoor, levelOfDetail);\n#else\n  vec4 outColor = TEXTURE(environmentMapSpecular, newTexCoor);\n#endif\n  // this is to make the darker sections more dark\n  // png and jpg usually flatten the brightness so it is to reverse that\n  return mix(\n    pow(outColor.xyz, vec3(10)),\n    pow(outColor.xyz, vec3(1.2)),\n    metallic \n  );\n}\n\nvoid totalLight(\n  vec3 modelPosition,\n  vec3 normal,\n  out vec3 totalDiffuse,\n  out vec3 totalSpecular\n) {\n\n  totalSpecular = vec3(0.0);\n\n  if (!uUseLighting) {\n    totalDiffuse = vec3(1.0);\n    return;\n  }\n\n  totalDiffuse = vec3(0.0);\n\n  vec3 viewDirection = normalize(-modelPosition);\n\n  for (int j = 0; j < 5; j++) {\n    if (j < uDirectionalLightCount) {\n      vec3 lightVector = (uViewMatrix * vec4(uLightingDirection[j], 0.0)).xyz;\n      vec3 lightColor = uDirectionalDiffuseColors[j];\n      vec3 specularColor = uDirectionalSpecularColors[j];\n      LightResult result = _light(viewDirection, normal, lightVector);\n      totalDiffuse += result.diffuse * lightColor;\n      totalSpecular += result.specular * lightColor * specularColor;\n    }\n\n    if (j < uPointLightCount) {\n      vec3 lightPosition = (uViewMatrix * vec4(uPointLightLocation[j], 1.0)).xyz;\n      vec3 lightVector = modelPosition - lightPosition;\n      //calculate attenuation\n      float lightDistance = length(lightVector);\n      float lightFalloff = 1.0 / (uConstantAttenuation + lightDistance * uLinearAttenuation + (lightDistance * lightDistance) * uQuadraticAttenuation);\n      vec3 lightColor = lightFalloff * uPointLightDiffuseColors[j];\n      vec3 specularColor = lightFalloff * uPointLightSpecularColors[j];\n\n      LightResult result = _light(viewDirection, normal, lightVector);\n      totalDiffuse += result.diffuse * lightColor;\n      totalSpecular += result.specular * lightColor * specularColor;\n    }\n\n    if(j < uSpotLightCount) {\n      vec3 lightPosition = (uViewMatrix * vec4(uSpotLightLocation[j], 1.0)).xyz;\n      vec3 lightVector = modelPosition - lightPosition;\n    \n      float lightDistance = length(lightVector);\n      float lightFalloff = 1.0 / (uConstantAttenuation + lightDistance * uLinearAttenuation + (lightDistance * lightDistance) * uQuadraticAttenuation);\n\n      vec3 lightDirection = (uViewMatrix * vec4(uSpotLightDirection[j], 0.0)).xyz;\n      float spotDot = dot(normalize(lightVector), normalize(lightDirection));\n      float spotFalloff;\n      if(spotDot < uSpotLightAngle[j]) {\n        spotFalloff = 0.0;\n      }\n      else {\n        spotFalloff = pow(spotDot, uSpotLightConc[j]);\n      }\n      lightFalloff *= spotFalloff;\n\n      vec3 lightColor = uSpotLightDiffuseColors[j];\n      vec3 specularColor = uSpotLightSpecularColors[j];\n     \n      LightResult result = _light(viewDirection, normal, lightVector);\n      \n      totalDiffuse += result.diffuse * lightColor * lightFalloff;\n      totalSpecular += result.specular * lightColor * specularColor * lightFalloff;\n    }\n  }\n\n  if( uUseImageLight ){\n    totalDiffuse += calculateImageDiffuse(normal, modelPosition);\n    totalSpecular += calculateImageSpecular(normal, modelPosition);\n  }\n\n  totalDiffuse *= diffuseFactor;\n  totalSpecular *= specularFactor;\n}\n'), E = {
                     sphereMappingFrag: "#define PI 3.141592\n\nprecision highp float;\n  \nuniform sampler2D uSampler;\nuniform mat3 uNewNormalMatrix;\nuniform float uFovY;\nuniform float uAspect;\n\nvarying vec2 vTexCoord;\n  \nvoid main() {\n    float uFovX = uFovY * uAspect; \n    vec4 newTexColor = texture2D(uSampler, vTexCoord);\n    float angleY = mix(uFovY/2.0,  -uFovY/2.0, vTexCoord.y);\n    float angleX = mix(uFovX/2.0, -uFovX/2.0, vTexCoord.x);\n    vec3 rotatedNormal = vec3( angleX, angleY, 1.0 );\n    rotatedNormal = uNewNormalMatrix * normalize(rotatedNormal);\n    vec2 suv;\n    suv.y = 0.5 + 0.5 * (-rotatedNormal.y);\n    suv.x = atan(rotatedNormal.z, rotatedNormal.x) / (2.0 * PI) + 0.5;\n    newTexColor = texture2D(uSampler, suv.xy);\n    gl_FragColor = newTexColor;\n}\n",
                     immediateVert: "IN vec3 aPosition;\nIN vec4 aVertexColor;\n\nuniform mat4 uModelViewMatrix;\nuniform mat4 uProjectionMatrix;\nuniform float uResolution;\nuniform float uPointSize;\n\nOUT vec4 vColor;\nvoid main(void) {\n  vec4 positionVec4 = vec4(aPosition, 1.0);\n  gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;\n  vColor = aVertexColor;\n  gl_PointSize = uPointSize;\n}\n",
                     vertexColorVert: "IN vec3 aPosition;\nIN vec4 aVertexColor;\n\nuniform mat4 uModelViewMatrix;\nuniform mat4 uProjectionMatrix;\n\nOUT vec4 vColor;\n\nvoid main(void) {\n  vec4 positionVec4 = vec4(aPosition, 1.0);\n  gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;\n  vColor = aVertexColor;\n}\n",
@@ -30710,13 +30830,13 @@ new (0, _p5Default.default)((sk)=>{
                     phongVert: "precision highp int;\n\nIN vec3 aPosition;\nIN vec3 aNormal;\nIN vec2 aTexCoord;\nIN vec4 aVertexColor;\n\nuniform vec3 uAmbientColor[5];\n\nuniform mat4 uModelViewMatrix;\nuniform mat4 uProjectionMatrix;\nuniform mat3 uNormalMatrix;\nuniform int uAmbientLightCount;\n\nuniform bool uUseVertexColor;\nuniform vec4 uMaterialColor;\n\nOUT vec3 vNormal;\nOUT vec2 vTexCoord;\nOUT vec3 vViewPosition;\nOUT vec3 vAmbientColor;\nOUT vec4 vColor;\n\nvoid main(void) {\n\n  vec4 viewModelPosition = uModelViewMatrix * vec4(aPosition, 1.0);\n\n  // Pass varyings to fragment shader\n  vViewPosition = viewModelPosition.xyz;\n  gl_Position = uProjectionMatrix * viewModelPosition;  \n\n  vNormal = uNormalMatrix * aNormal;\n  vTexCoord = aTexCoord;\n\n  // TODO: this should be a uniform\n  vAmbientColor = vec3(0.0);\n  for (int i = 0; i < 5; i++) {\n    if (i < uAmbientLightCount) {\n      vAmbientColor += uAmbientColor[i];\n    }\n  }\n  \n  vColor = (uUseVertexColor ? aVertexColor : uMaterialColor);\n}\n",
                     phongFrag: e1 + "// include lighting.glsl\nprecision highp int;\n\nuniform bool uHasSetAmbient;\nuniform vec4 uSpecularMatColor;\nuniform vec4 uAmbientMatColor;\nuniform vec4 uEmissiveMatColor;\n\nuniform vec4 uTint;\nuniform sampler2D uSampler;\nuniform bool isTexture;\n\nIN vec3 vNormal;\nIN vec2 vTexCoord;\nIN vec3 vViewPosition;\nIN vec3 vAmbientColor;\nIN vec4 vColor;\n\nvoid main(void) {\n\n  vec3 diffuse;\n  vec3 specular;\n  totalLight(vViewPosition, normalize(vNormal), diffuse, specular);\n\n  // Calculating final color as result of all lights (plus emissive term).\n\n  vec4 baseColor = isTexture\n    // Textures come in with premultiplied alpha. To apply tint and still have\n    // premultiplied alpha output, we need to multiply the RGB channels by the\n    // tint RGB, and all channels by the tint alpha.\n    ? TEXTURE(uSampler, vTexCoord) * vec4(uTint.rgb/255., 1.) * (uTint.a/255.)\n    // Colors come in with unmultiplied alpha, so we need to multiply the RGB\n    // channels by alpha to convert it to premultiplied alpha.\n    : vec4(vColor.rgb * vColor.a, vColor.a);\n  OUT_COLOR = vec4(diffuse * baseColor.rgb + \n                    vAmbientColor * (\n                      uHasSetAmbient ? uAmbientMatColor.rgb : baseColor.rgb\n                    ) + \n                    specular * uSpecularMatColor.rgb + \n                    uEmissiveMatColor.rgb, baseColor.a);\n}\n",
                     fontVert: "IN vec3 aPosition;\nIN vec2 aTexCoord;\nuniform mat4 uModelViewMatrix;\nuniform mat4 uProjectionMatrix;\n\nuniform vec4 uGlyphRect;\nuniform float uGlyphOffset;\n\nOUT vec2 vTexCoord;\nOUT float w;\n\nvoid main() {\n  vec4 positionVec4 = vec4(aPosition, 1.0);\n\n  // scale by the size of the glyph's rectangle\n  positionVec4.xy *= uGlyphRect.zw - uGlyphRect.xy;\n\n  // Expand glyph bounding boxes by 1px on each side to give a bit of room\n  // for antialiasing\n  vec3 newOrigin = (uModelViewMatrix * vec4(0., 0., 0., 1.)).xyz;\n  vec3 newDX = (uModelViewMatrix * vec4(1., 0., 0., 1.)).xyz;\n  vec3 newDY = (uModelViewMatrix * vec4(0., 1., 0., 1.)).xyz;\n  vec2 pixelScale = vec2(\n    1. / length(newOrigin - newDX),\n    1. / length(newOrigin - newDY)\n  );\n  vec2 offset = pixelScale * normalize(aTexCoord - vec2(0.5, 0.5)) * vec2(1., -1.);\n  vec2 textureOffset = offset * (1. / vec2(\n    uGlyphRect.z - uGlyphRect.x,\n    uGlyphRect.w - uGlyphRect.y\n  ));\n\n  // move to the corner of the glyph\n  positionVec4.xy += uGlyphRect.xy;\n\n  // move to the letter's line offset\n  positionVec4.x += uGlyphOffset;\n\n  positionVec4.xy += offset;\n  \n  gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;\n  vTexCoord = aTexCoord + textureOffset;\n  w = gl_Position.w;\n}\n",
-                    fontFrag: "#ifndef WEBGL2\n#extension GL_OES_standard_derivatives : enable\n#endif\n\n#if 0\n  // simulate integer math using floats\n	#define int float\n	#define ivec2 vec2\n	#define INT(x) float(x)\n\n	int ifloor(float v) { return floor(v); }\n	ivec2 ifloor(vec2 v) { return floor(v); }\n\n#else\n  // use native integer math\n	precision highp int;\n	#define INT(x) x\n\n	int ifloor(float v) { return int(v); }\n	int ifloor(int v) { return v; }\n	ivec2 ifloor(vec2 v) { return ivec2(v); }\n\n#endif\n\nuniform sampler2D uSamplerStrokes;\nuniform sampler2D uSamplerRowStrokes;\nuniform sampler2D uSamplerRows;\nuniform sampler2D uSamplerColStrokes;\nuniform sampler2D uSamplerCols;\n\nuniform ivec2 uStrokeImageSize;\nuniform ivec2 uCellsImageSize;\nuniform ivec2 uGridImageSize;\n\nuniform ivec2 uGridOffset;\nuniform ivec2 uGridSize;\nuniform vec4 uMaterialColor;\n\nIN vec2 vTexCoord;\n\n// some helper functions\nint ROUND(float v) { return ifloor(v + 0.5); }\nivec2 ROUND(vec2 v) { return ifloor(v + 0.5); }\nfloat saturate(float v) { return clamp(v, 0.0, 1.0); }\nvec2 saturate(vec2 v) { return clamp(v, 0.0, 1.0); }\n\nint mul(float v1, int v2) {\n  return ifloor(v1 * float(v2));\n}\n\nivec2 mul(vec2 v1, ivec2 v2) {\n  return ifloor(v1 * vec2(v2) + 0.5);\n}\n\n// unpack a 16-bit integer from a float vec2\nint getInt16(vec2 v) {\n  ivec2 iv = ROUND(v * 255.0);\n  return iv.x * INT(128) + iv.y;\n}\n\nvec2 pixelScale;\nvec2 coverage = vec2(0.0);\nvec2 weight = vec2(0.5);\nconst float minDistance = 1.0/8192.0;\nconst float hardness = 1.05; // amount of antialias\n\n// the maximum number of curves in a glyph\nconst int N = INT(250);\n\n// retrieves an indexed pixel from a sampler\nvec4 getTexel(sampler2D sampler, int pos, ivec2 size) {\n  int width = size.x;\n  int y = ifloor(pos / width);\n  int x = pos - y * width;  // pos % width\n\n  return TEXTURE(sampler, (vec2(x, y) + 0.5) / vec2(size));\n}\n\nvoid calulateCrossings(vec2 p0, vec2 p1, vec2 p2, out vec2 C1, out vec2 C2) {\n\n  // get the coefficients of the quadratic in t\n  vec2 a = p0 - p1 * 2.0 + p2;\n  vec2 b = p0 - p1;\n  vec2 c = p0 - vTexCoord;\n\n  // found out which values of 't' it crosses the axes\n  vec2 surd = sqrt(max(vec2(0.0), b * b - a * c));\n  vec2 t1 = ((b - surd) / a).yx;\n  vec2 t2 = ((b + surd) / a).yx;\n\n  // approximate straight lines to avoid rounding errors\n  if (abs(a.y) < 0.001)\n    t1.x = t2.x = c.y / (2.0 * b.y);\n\n  if (abs(a.x) < 0.001)\n    t1.y = t2.y = c.x / (2.0 * b.x);\n\n  // plug into quadratic formula to find the corrdinates of the crossings\n  C1 = ((a * t1 - b * 2.0) * t1 + c) * pixelScale;\n  C2 = ((a * t2 - b * 2.0) * t2 + c) * pixelScale;\n}\n\nvoid coverageX(vec2 p0, vec2 p1, vec2 p2) {\n\n  vec2 C1, C2;\n  calulateCrossings(p0, p1, p2, C1, C2);\n\n  // determine on which side of the x-axis the points lie\n  bool y0 = p0.y > vTexCoord.y;\n  bool y1 = p1.y > vTexCoord.y;\n  bool y2 = p2.y > vTexCoord.y;\n\n  // could web be under the curve (after t1)?\n  if (y1 ? !y2 : y0) {\n    // add the coverage for t1\n    coverage.x += saturate(C1.x + 0.5);\n    // calculate the anti-aliasing for t1\n    weight.x = min(weight.x, abs(C1.x));\n  }\n\n  // are we outside the curve (after t2)?\n  if (y1 ? !y0 : y2) {\n    // subtract the coverage for t2\n    coverage.x -= saturate(C2.x + 0.5);\n    // calculate the anti-aliasing for t2\n    weight.x = min(weight.x, abs(C2.x));\n  }\n}\n\n// this is essentially the same as coverageX, but with the axes swapped\nvoid coverageY(vec2 p0, vec2 p1, vec2 p2) {\n\n  vec2 C1, C2;\n  calulateCrossings(p0, p1, p2, C1, C2);\n\n  bool x0 = p0.x > vTexCoord.x;\n  bool x1 = p1.x > vTexCoord.x;\n  bool x2 = p2.x > vTexCoord.x;\n\n  if (x1 ? !x2 : x0) {\n    coverage.y -= saturate(C1.y + 0.5);\n    weight.y = min(weight.y, abs(C1.y));\n  }\n\n  if (x1 ? !x0 : x2) {\n    coverage.y += saturate(C2.y + 0.5);\n    weight.y = min(weight.y, abs(C2.y));\n  }\n}\n\nvoid main() {\n\n  // calculate the pixel scale based on screen-coordinates\n  pixelScale = hardness / fwidth(vTexCoord);\n\n  // which grid cell is this pixel in?\n  ivec2 gridCoord = ifloor(vTexCoord * vec2(uGridSize));\n\n  // intersect curves in this row\n  {\n    // the index into the row info bitmap\n    int rowIndex = gridCoord.y + uGridOffset.y;\n    // fetch the info texel\n    vec4 rowInfo = getTexel(uSamplerRows, rowIndex, uGridImageSize);\n    // unpack the rowInfo\n    int rowStrokeIndex = getInt16(rowInfo.xy);\n    int rowStrokeCount = getInt16(rowInfo.zw);\n\n    for (int iRowStroke = INT(0); iRowStroke < N; iRowStroke++) {\n      if (iRowStroke >= rowStrokeCount)\n        break;\n\n      // each stroke is made up of 3 points: the start and control point\n      // and the start of the next curve.\n      // fetch the indices of this pair of strokes:\n      vec4 strokeIndices = getTexel(uSamplerRowStrokes, rowStrokeIndex++, uCellsImageSize);\n\n      // unpack the stroke index\n      int strokePos = getInt16(strokeIndices.xy);\n\n      // fetch the two strokes\n      vec4 stroke0 = getTexel(uSamplerStrokes, strokePos + INT(0), uStrokeImageSize);\n      vec4 stroke1 = getTexel(uSamplerStrokes, strokePos + INT(1), uStrokeImageSize);\n\n      // calculate the coverage\n      coverageX(stroke0.xy, stroke0.zw, stroke1.xy);\n    }\n  }\n\n  // intersect curves in this column\n  {\n    int colIndex = gridCoord.x + uGridOffset.x;\n    vec4 colInfo = getTexel(uSamplerCols, colIndex, uGridImageSize);\n    int colStrokeIndex = getInt16(colInfo.xy);\n    int colStrokeCount = getInt16(colInfo.zw);\n    \n    for (int iColStroke = INT(0); iColStroke < N; iColStroke++) {\n      if (iColStroke >= colStrokeCount)\n        break;\n\n      vec4 strokeIndices = getTexel(uSamplerColStrokes, colStrokeIndex++, uCellsImageSize);\n\n      int strokePos = getInt16(strokeIndices.xy);\n      vec4 stroke0 = getTexel(uSamplerStrokes, strokePos + INT(0), uStrokeImageSize);\n      vec4 stroke1 = getTexel(uSamplerStrokes, strokePos + INT(1), uStrokeImageSize);\n      coverageY(stroke0.xy, stroke0.zw, stroke1.xy);\n    }\n  }\n\n  weight = saturate(1.0 - weight * 2.0);\n  float distance = max(weight.x + weight.y, minDistance); // manhattan approx.\n  float antialias = abs(dot(coverage, weight) / distance);\n  float cover = min(abs(coverage.x), abs(coverage.y));\n  OUT_COLOR = vec4(uMaterialColor.rgb, 1.) * uMaterialColor.a;\n  OUT_COLOR *= saturate(max(antialias, cover));\n}\n",
+                    fontFrag: "#ifndef WEBGL2\n#extension GL_OES_standard_derivatives : enable\n#endif\n\n#if 0\n  // simulate integer math using floats\n\t#define int float\n\t#define ivec2 vec2\n\t#define INT(x) float(x)\n\n\tint ifloor(float v) { return floor(v); }\n\tivec2 ifloor(vec2 v) { return floor(v); }\n\n#else\n  // use native integer math\n\tprecision highp int;\n\t#define INT(x) x\n\n\tint ifloor(float v) { return int(v); }\n\tint ifloor(int v) { return v; }\n\tivec2 ifloor(vec2 v) { return ivec2(v); }\n\n#endif\n\nuniform sampler2D uSamplerStrokes;\nuniform sampler2D uSamplerRowStrokes;\nuniform sampler2D uSamplerRows;\nuniform sampler2D uSamplerColStrokes;\nuniform sampler2D uSamplerCols;\n\nuniform ivec2 uStrokeImageSize;\nuniform ivec2 uCellsImageSize;\nuniform ivec2 uGridImageSize;\n\nuniform ivec2 uGridOffset;\nuniform ivec2 uGridSize;\nuniform vec4 uMaterialColor;\n\nIN vec2 vTexCoord;\n\n// some helper functions\nint ROUND(float v) { return ifloor(v + 0.5); }\nivec2 ROUND(vec2 v) { return ifloor(v + 0.5); }\nfloat saturate(float v) { return clamp(v, 0.0, 1.0); }\nvec2 saturate(vec2 v) { return clamp(v, 0.0, 1.0); }\n\nint mul(float v1, int v2) {\n  return ifloor(v1 * float(v2));\n}\n\nivec2 mul(vec2 v1, ivec2 v2) {\n  return ifloor(v1 * vec2(v2) + 0.5);\n}\n\n// unpack a 16-bit integer from a float vec2\nint getInt16(vec2 v) {\n  ivec2 iv = ROUND(v * 255.0);\n  return iv.x * INT(128) + iv.y;\n}\n\nvec2 pixelScale;\nvec2 coverage = vec2(0.0);\nvec2 weight = vec2(0.5);\nconst float minDistance = 1.0/8192.0;\nconst float hardness = 1.05; // amount of antialias\n\n// the maximum number of curves in a glyph\nconst int N = INT(250);\n\n// retrieves an indexed pixel from a sampler\nvec4 getTexel(sampler2D sampler, int pos, ivec2 size) {\n  int width = size.x;\n  int y = ifloor(pos / width);\n  int x = pos - y * width;  // pos % width\n\n  return TEXTURE(sampler, (vec2(x, y) + 0.5) / vec2(size));\n}\n\nvoid calulateCrossings(vec2 p0, vec2 p1, vec2 p2, out vec2 C1, out vec2 C2) {\n\n  // get the coefficients of the quadratic in t\n  vec2 a = p0 - p1 * 2.0 + p2;\n  vec2 b = p0 - p1;\n  vec2 c = p0 - vTexCoord;\n\n  // found out which values of 't' it crosses the axes\n  vec2 surd = sqrt(max(vec2(0.0), b * b - a * c));\n  vec2 t1 = ((b - surd) / a).yx;\n  vec2 t2 = ((b + surd) / a).yx;\n\n  // approximate straight lines to avoid rounding errors\n  if (abs(a.y) < 0.001)\n    t1.x = t2.x = c.y / (2.0 * b.y);\n\n  if (abs(a.x) < 0.001)\n    t1.y = t2.y = c.x / (2.0 * b.x);\n\n  // plug into quadratic formula to find the corrdinates of the crossings\n  C1 = ((a * t1 - b * 2.0) * t1 + c) * pixelScale;\n  C2 = ((a * t2 - b * 2.0) * t2 + c) * pixelScale;\n}\n\nvoid coverageX(vec2 p0, vec2 p1, vec2 p2) {\n\n  vec2 C1, C2;\n  calulateCrossings(p0, p1, p2, C1, C2);\n\n  // determine on which side of the x-axis the points lie\n  bool y0 = p0.y > vTexCoord.y;\n  bool y1 = p1.y > vTexCoord.y;\n  bool y2 = p2.y > vTexCoord.y;\n\n  // could web be under the curve (after t1)?\n  if (y1 ? !y2 : y0) {\n    // add the coverage for t1\n    coverage.x += saturate(C1.x + 0.5);\n    // calculate the anti-aliasing for t1\n    weight.x = min(weight.x, abs(C1.x));\n  }\n\n  // are we outside the curve (after t2)?\n  if (y1 ? !y0 : y2) {\n    // subtract the coverage for t2\n    coverage.x -= saturate(C2.x + 0.5);\n    // calculate the anti-aliasing for t2\n    weight.x = min(weight.x, abs(C2.x));\n  }\n}\n\n// this is essentially the same as coverageX, but with the axes swapped\nvoid coverageY(vec2 p0, vec2 p1, vec2 p2) {\n\n  vec2 C1, C2;\n  calulateCrossings(p0, p1, p2, C1, C2);\n\n  bool x0 = p0.x > vTexCoord.x;\n  bool x1 = p1.x > vTexCoord.x;\n  bool x2 = p2.x > vTexCoord.x;\n\n  if (x1 ? !x2 : x0) {\n    coverage.y -= saturate(C1.y + 0.5);\n    weight.y = min(weight.y, abs(C1.y));\n  }\n\n  if (x1 ? !x0 : x2) {\n    coverage.y += saturate(C2.y + 0.5);\n    weight.y = min(weight.y, abs(C2.y));\n  }\n}\n\nvoid main() {\n\n  // calculate the pixel scale based on screen-coordinates\n  pixelScale = hardness / fwidth(vTexCoord);\n\n  // which grid cell is this pixel in?\n  ivec2 gridCoord = ifloor(vTexCoord * vec2(uGridSize));\n\n  // intersect curves in this row\n  {\n    // the index into the row info bitmap\n    int rowIndex = gridCoord.y + uGridOffset.y;\n    // fetch the info texel\n    vec4 rowInfo = getTexel(uSamplerRows, rowIndex, uGridImageSize);\n    // unpack the rowInfo\n    int rowStrokeIndex = getInt16(rowInfo.xy);\n    int rowStrokeCount = getInt16(rowInfo.zw);\n\n    for (int iRowStroke = INT(0); iRowStroke < N; iRowStroke++) {\n      if (iRowStroke >= rowStrokeCount)\n        break;\n\n      // each stroke is made up of 3 points: the start and control point\n      // and the start of the next curve.\n      // fetch the indices of this pair of strokes:\n      vec4 strokeIndices = getTexel(uSamplerRowStrokes, rowStrokeIndex++, uCellsImageSize);\n\n      // unpack the stroke index\n      int strokePos = getInt16(strokeIndices.xy);\n\n      // fetch the two strokes\n      vec4 stroke0 = getTexel(uSamplerStrokes, strokePos + INT(0), uStrokeImageSize);\n      vec4 stroke1 = getTexel(uSamplerStrokes, strokePos + INT(1), uStrokeImageSize);\n\n      // calculate the coverage\n      coverageX(stroke0.xy, stroke0.zw, stroke1.xy);\n    }\n  }\n\n  // intersect curves in this column\n  {\n    int colIndex = gridCoord.x + uGridOffset.x;\n    vec4 colInfo = getTexel(uSamplerCols, colIndex, uGridImageSize);\n    int colStrokeIndex = getInt16(colInfo.xy);\n    int colStrokeCount = getInt16(colInfo.zw);\n    \n    for (int iColStroke = INT(0); iColStroke < N; iColStroke++) {\n      if (iColStroke >= colStrokeCount)\n        break;\n\n      vec4 strokeIndices = getTexel(uSamplerColStrokes, colStrokeIndex++, uCellsImageSize);\n\n      int strokePos = getInt16(strokeIndices.xy);\n      vec4 stroke0 = getTexel(uSamplerStrokes, strokePos + INT(0), uStrokeImageSize);\n      vec4 stroke1 = getTexel(uSamplerStrokes, strokePos + INT(1), uStrokeImageSize);\n      coverageY(stroke0.xy, stroke0.zw, stroke1.xy);\n    }\n  }\n\n  weight = saturate(1.0 - weight * 2.0);\n  float distance = max(weight.x + weight.y, minDistance); // manhattan approx.\n  float antialias = abs(dot(coverage, weight) / distance);\n  float cover = min(abs(coverage.x), abs(coverage.y));\n  OUT_COLOR = vec4(uMaterialColor.rgb, 1.) * uMaterialColor.a;\n  OUT_COLOR *= saturate(max(antialias, cover));\n}\n",
                     lineVert: T + "/*\n  Part of the Processing project - http://processing.org\n  Copyright (c) 2012-15 The Processing Foundation\n  Copyright (c) 2004-12 Ben Fry and Casey Reas\n  Copyright (c) 2001-04 Massachusetts Institute of Technology\n  This library is free software; you can redistribute it and/or\n  modify it under the terms of the GNU Lesser General Public\n  License as published by the Free Software Foundation, version 2.1.\n  This library is distributed in the hope that it will be useful,\n  but WITHOUT ANY WARRANTY; without even the implied warranty of\n  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n  Lesser General Public License for more details.\n  You should have received a copy of the GNU Lesser General\n  Public License along with this library; if not, write to the\n  Free Software Foundation, Inc., 59 Temple Place, Suite 330,\n  Boston, MA  02111-1307  USA\n*/\n\n#define PROCESSING_LINE_SHADER\n\nprecision mediump int;\n\nuniform mat4 uModelViewMatrix;\nuniform mat4 uProjectionMatrix;\nuniform float uStrokeWeight;\n\nuniform bool uUseLineColor;\nuniform vec4 uMaterialColor;\n\nuniform vec4 uViewport;\nuniform int uPerspective;\nuniform int uStrokeJoin;\n\nIN vec4 aPosition;\nIN vec3 aTangentIn;\nIN vec3 aTangentOut;\nIN float aSide;\nIN vec4 aVertexColor;\n\nOUT vec4 vColor;\nOUT vec2 vTangent;\nOUT vec2 vCenter;\nOUT vec2 vPosition;\nOUT float vMaxDist;\nOUT float vCap;\nOUT float vJoin;\n\nvec2 lineIntersection(vec2 aPoint, vec2 aDir, vec2 bPoint, vec2 bDir) {\n  // Rotate and translate so a starts at the origin and goes out to the right\n  bPoint -= aPoint;\n  vec2 rotatedBFrom = vec2(\n    bPoint.x*aDir.x + bPoint.y*aDir.y,\n    bPoint.y*aDir.x - bPoint.x*aDir.y\n  );\n  vec2 bTo = bPoint + bDir;\n  vec2 rotatedBTo = vec2(\n    bTo.x*aDir.x + bTo.y*aDir.y,\n    bTo.y*aDir.x - bTo.x*aDir.y\n  );\n  float intersectionDistance =\n    rotatedBTo.x + (rotatedBFrom.x - rotatedBTo.x) * rotatedBTo.y /\n    (rotatedBTo.y - rotatedBFrom.y);\n  return aPoint + aDir * intersectionDistance;\n}\n\nvoid main() {\n  // Caps have one of either the in or out tangent set to 0\n  vCap = (aTangentIn == vec3(0.)) != (aTangentOut == (vec3(0.)))\n    ? 1. : 0.;\n\n  // Joins have two unique, defined tangents\n  vJoin = (\n    aTangentIn != vec3(0.) &&\n    aTangentOut != vec3(0.) &&\n    aTangentIn != aTangentOut\n  ) ? 1. : 0.;\n\n  vec4 posp = uModelViewMatrix * aPosition;\n  vec4 posqIn = uModelViewMatrix * (aPosition + vec4(aTangentIn, 0));\n  vec4 posqOut = uModelViewMatrix * (aPosition + vec4(aTangentOut, 0));\n\n  float facingCamera = pow(\n    // The word space tangent's z value is 0 if it's facing the camera\n    abs(normalize(posqIn-posp).z),\n\n    // Using pow() here to ramp `facingCamera` up from 0 to 1 really quickly\n    // so most lines get scaled and don't get clipped\n    0.25\n  );\n\n  // using a scale <1 moves the lines towards the camera\n  // in order to prevent popping effects due to half of\n  // the line disappearing behind the geometry faces.\n  float scale = mix(1., 0.995, facingCamera);\n\n  // Moving vertices slightly toward the camera\n  // to avoid depth-fighting with the fill triangles.\n  // Discussed here:\n  // http://www.opengl.org/discussion_boards/ubbthreads.php?ubb=showflat&Number=252848  \n  posp.xyz = posp.xyz * scale;\n  posqIn.xyz = posqIn.xyz * scale;\n  posqOut.xyz = posqOut.xyz * scale;\n\n  vec4 p = uProjectionMatrix * posp;\n  vec4 qIn = uProjectionMatrix * posqIn;\n  vec4 qOut = uProjectionMatrix * posqOut;\n  vCenter = p.xy;\n\n  // formula to convert from clip space (range -1..1) to screen space (range 0..[width or height])\n  // screen_p = (p.xy/p.w + <1,1>) * 0.5 * uViewport.zw\n\n  // prevent division by W by transforming the tangent formula (div by 0 causes\n  // the line to disappear, see https://github.com/processing/processing/issues/5183)\n  // t = screen_q - screen_p\n  //\n  // tangent is normalized and we don't care which aDirection it points to (+-)\n  // t = +- normalize( screen_q - screen_p )\n  // t = +- normalize( (q.xy/q.w+<1,1>)*0.5*uViewport.zw - (p.xy/p.w+<1,1>)*0.5*uViewport.zw )\n  //\n  // extract common factor, <1,1> - <1,1> cancels out\n  // t = +- normalize( (q.xy/q.w - p.xy/p.w) * 0.5 * uViewport.zw )\n  //\n  // convert to common divisor\n  // t = +- normalize( ((q.xy*p.w - p.xy*q.w) / (p.w*q.w)) * 0.5 * uViewport.zw )\n  //\n  // remove the common scalar divisor/factor, not needed due to normalize and +-\n  // (keep uViewport - can't remove because it has different components for x and y\n  //  and corrects for aspect ratio, see https://github.com/processing/processing/issues/5181)\n  // t = +- normalize( (q.xy*p.w - p.xy*q.w) * uViewport.zw )\n\n  vec2 tangentIn = normalize((qIn.xy*p.w - p.xy*qIn.w) * uViewport.zw);\n  vec2 tangentOut = normalize((qOut.xy*p.w - p.xy*qOut.w) * uViewport.zw);\n\n  vec2 curPerspScale;\n  if(uPerspective == 1) {\n    // Perspective ---\n    // convert from world to clip by multiplying with projection scaling factor\n    // to get the right thickness (see https://github.com/processing/processing/issues/5182)\n\n    // The y value of the projection matrix may be flipped if rendering to a Framebuffer.\n    // Multiplying again by its sign here negates the flip to get just the scale.\n    curPerspScale = (uProjectionMatrix * vec4(1, sign(uProjectionMatrix[1][1]), 0, 0)).xy;\n  } else {\n    // No Perspective ---\n    // multiply by W (to cancel out division by W later in the pipeline) and\n    // convert from screen to clip (derived from clip to screen above)\n    curPerspScale = p.w / (0.5 * uViewport.zw);\n  }\n\n  vec2 offset;\n  if (vJoin == 1.) {\n    vTangent = normalize(tangentIn + tangentOut);\n    vec2 normalIn = vec2(-tangentIn.y, tangentIn.x);\n    vec2 normalOut = vec2(-tangentOut.y, tangentOut.x);\n    float side = sign(aSide);\n    float sideEnum = abs(aSide);\n\n    // We generate vertices for joins on either side of the centerline, but\n    // the \"elbow\" side is the only one needing a join. By not setting the\n    // offset for the other side, all its vertices will end up in the same\n    // spot and not render, effectively discarding it.\n    if (sign(dot(tangentOut, vec2(-tangentIn.y, tangentIn.x))) != side) {\n      // Side enums:\n      //   1: the side going into the join\n      //   2: the middle of the join\n      //   3: the side going out of the join\n      if (sideEnum == 2.) {\n        // Calculate the position + tangent on either side of the join, and\n        // find where the lines intersect to find the elbow of the join\n        vec2 c = (posp.xy/posp.w + vec2(1.,1.)) * 0.5 * uViewport.zw;\n        vec2 intersection = lineIntersection(\n          c + (side * normalIn * uStrokeWeight / 2.),\n          tangentIn,\n          c + (side * normalOut * uStrokeWeight / 2.),\n          tangentOut\n        );\n        offset = (intersection - c);\n\n        // When lines are thick and the angle of the join approaches 180, the\n        // elbow might be really far from the center. We'll apply a limit to\n        // the magnitude to avoid lines going across the whole screen when this\n        // happens.\n        float mag = length(offset);\n        float maxMag = 3. * uStrokeWeight;\n        if (mag > maxMag) {\n          offset *= maxMag / mag;\n        }\n      } else if (sideEnum == 1.) {\n        offset = side * normalIn * uStrokeWeight / 2.;\n      } else if (sideEnum == 3.) {\n        offset = side * normalOut * uStrokeWeight / 2.;\n      }\n    }\n    if (uStrokeJoin == STROKE_JOIN_BEVEL) {\n      vec2 avgNormal = vec2(-vTangent.y, vTangent.x);\n      vMaxDist = abs(dot(avgNormal, normalIn * uStrokeWeight / 2.));\n    } else {\n      vMaxDist = uStrokeWeight / 2.;\n    }\n  } else {\n    vec2 tangent = aTangentIn == vec3(0.) ? tangentOut : tangentIn;\n    vTangent = tangent;\n    vec2 normal = vec2(-tangent.y, tangent.x);\n\n    float normalOffset = sign(aSide);\n    // Caps will have side values of -2 or 2 on the edge of the cap that\n    // extends out from the line\n    float tangentOffset = abs(aSide) - 1.;\n    offset = (normal * normalOffset + tangent * tangentOffset) *\n      uStrokeWeight * 0.5;\n    vMaxDist = uStrokeWeight / 2.;\n  }\n  vPosition = vCenter + offset;\n\n  gl_Position.xy = p.xy + offset.xy * curPerspScale;\n  gl_Position.zw = p.zw;\n  \n  vColor = (uUseLineColor ? aVertexColor : uMaterialColor);\n}\n",
                     lineFrag: T + "precision mediump int;\n\nuniform vec4 uMaterialColor;\nuniform int uStrokeCap;\nuniform int uStrokeJoin;\nuniform float uStrokeWeight;\n\nIN vec4 vColor;\nIN vec2 vTangent;\nIN vec2 vCenter;\nIN vec2 vPosition;\nIN float vMaxDist;\nIN float vCap;\nIN float vJoin;\n\nfloat distSquared(vec2 a, vec2 b) {\n  vec2 aToB = b - a;\n  return dot(aToB, aToB);\n}\n\nvoid main() {\n  if (vCap > 0.) {\n    if (\n      uStrokeCap == STROKE_CAP_ROUND &&\n      distSquared(vPosition, vCenter) > uStrokeWeight * uStrokeWeight * 0.25\n    ) {\n      discard;\n    } else if (\n      uStrokeCap == STROKE_CAP_SQUARE &&\n      dot(vPosition - vCenter, vTangent) > 0.\n    ) {\n      discard;\n    }\n    // Use full area for PROJECT\n  } else if (vJoin > 0.) {\n    if (\n      uStrokeJoin == STROKE_JOIN_ROUND &&\n      distSquared(vPosition, vCenter) > uStrokeWeight * uStrokeWeight * 0.25\n    ) {\n      discard;\n    } else if (uStrokeJoin == STROKE_JOIN_BEVEL) {\n      vec2 normal = vec2(-vTangent.y, vTangent.x);\n      if (abs(dot(vPosition - vCenter, normal)) > vMaxDist) {\n        discard;\n      }\n    }\n    // Use full area for MITER\n  }\n  OUT_COLOR = vec4(vColor.rgb, 1.) * vColor.a;\n}\n",
-                    pointVert: "IN vec3 aPosition;\nuniform float uPointSize;\nOUT float vStrokeWeight;\nuniform mat4 uModelViewMatrix;\nuniform mat4 uProjectionMatrix;\nvoid main() {\n	vec4 positionVec4 =  vec4(aPosition, 1.0);\n	gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;\n	gl_PointSize = uPointSize;\n	vStrokeWeight = uPointSize;\n}\n",
+                    pointVert: "IN vec3 aPosition;\nuniform float uPointSize;\nOUT float vStrokeWeight;\nuniform mat4 uModelViewMatrix;\nuniform mat4 uProjectionMatrix;\nvoid main() {\n\tvec4 positionVec4 =  vec4(aPosition, 1.0);\n\tgl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;\n\tgl_PointSize = uPointSize;\n\tvStrokeWeight = uPointSize;\n}\n",
                     pointFrag: "precision mediump int;\nuniform vec4 uMaterialColor;\nIN float vStrokeWeight;\n\nvoid main(){\n  float mask = 0.0;\n\n  // make a circular mask using the gl_PointCoord (goes from 0 - 1 on a point)\n  // might be able to get a nicer edge on big strokeweights with smoothstep but slightly less performant\n\n  mask = step(0.98, length(gl_PointCoord * 2.0 - 1.0));\n\n  // if strokeWeight is 1 or less lets just draw a square\n  // this prevents weird artifacting from carving circles when our points are really small\n  // if strokeWeight is larger than 1, we just use it as is\n\n  mask = mix(0.0, mask, clamp(floor(vStrokeWeight - 0.5),0.0,1.0));\n\n  // throw away the borders of the mask\n  // otherwise we get weird alpha blending issues\n\n  if(mask > 0.98){\n    discard;\n  }\n\n  OUT_COLOR = vec4(uMaterialColor.rgb, 1.) * uMaterialColor.a;\n}\n",
                     imageLightVert: "precision highp float;\nattribute vec3 aPosition;\nattribute vec3 aNormal;\nattribute vec2 aTexCoord;\n\nvarying vec3 localPos;\nvarying vec3 vWorldNormal;\nvarying vec3 vWorldPosition;\nvarying vec2 vTexCoord;\n\nuniform mat4 uModelViewMatrix;\nuniform mat4 uProjectionMatrix;\nuniform mat3 uNormalMatrix;\n\nvoid main() {\n  // Multiply the position by the matrix.\n  vec4 viewModelPosition = uModelViewMatrix * vec4(aPosition, 1.0);\n  gl_Position = uProjectionMatrix * viewModelPosition;  \n  \n  // orient the normals and pass to the fragment shader\n  vWorldNormal = uNormalMatrix * aNormal;\n  \n  // send the view position to the fragment shader\n  vWorldPosition = (uModelViewMatrix * vec4(aPosition, 1.0)).xyz;\n  \n  localPos = vWorldPosition;\n  vTexCoord = aTexCoord;\n}\n\n\n/*\nin the vertex shader we'll compute the world position and world oriented normal of the vertices and pass those to the fragment shader as varyings.\n*/\n",
-                    imageLightDiffusedFrag: "precision highp float;\nvarying vec3 localPos;\n\n// the HDR cubemap converted (can be from an equirectangular environment map.)\nuniform sampler2D environmentMap;\nvarying vec2 vTexCoord;\n\nconst float PI = 3.14159265359;\n\nvec2 nTOE( vec3 v ){\n  // x = r sin(phi) cos(theta)   \n  // y = r cos(phi)  \n  // z = r sin(phi) sin(theta)\n  float phi = acos( v.y );\n  // if phi is 0, then there are no x, z components\n  float theta = 0.0;\n  // else \n  theta = acos(v.x / sin(phi));\n  float sinTheta = v.z / sin(phi);\n  if (sinTheta < 0.0) {\n    // Turn it into -theta, but in the 0-2PI range\n    theta = 2.0 * PI - theta;\n  }\n  theta = theta / (2.0 * 3.14159);\n  phi = phi / 3.14159 ;\n  \n  vec2 angles = vec2( phi, theta );\n  return angles;\n}\n\nfloat random(vec2 p) {\n  vec3 p3  = fract(vec3(p.xyx) * .1031);\n  p3 += dot(p3, p3.yzx + 33.33);\n  return fract((p3.x + p3.y) * p3.z);\n}\n\nvoid main()\n{   	 \n	// the sample direction equals the hemisphere's orientation\n  float phi = vTexCoord.x * 2.0 * PI;\n  float theta = vTexCoord.y * PI;\n  float x = sin(theta) * cos(phi);\n  float y = sin(theta) * sin(phi);\n  float z = cos(theta);\n  vec3 normal = vec3( x, y, z);\n\n	// Discretely sampling the hemisphere given the integral's\n  // spherical coordinates translates to the following fragment code:\n	vec3 irradiance = vec3(0.0);  \n	vec3 up	= vec3(0.0, 1.0, 0.0);\n	vec3 right = normalize(cross(up, normal));\n	up = normalize(cross(normal, right));\n\n	//  We specify a fixed sampleDelta delta value to traverse\n  // the hemisphere; decreasing or increasing the sample delta\n  // will increase or decrease the accuracy respectively.\n	const float sampleDelta = 0.100;\n	float nrSamples = 0.0;\n  float randomOffset = random(gl_FragCoord.xy) * sampleDelta;\n	for(float rawPhi = 0.0; rawPhi < 2.0 * PI; rawPhi += sampleDelta)\n	{\n    float phi = rawPhi + randomOffset;\n    for(float rawTheta = 0.0; rawTheta < ( 0.5 ) * PI; rawTheta += sampleDelta)\n    {\n      float theta = rawTheta + randomOffset;\n      // spherical to cartesian (in tangent space) // tangent space to world // add each sample result to irradiance\n      float x = sin(theta) * cos(phi);\n      float y = sin(theta) * sin(phi);\n      float z = cos(theta);\n      vec3 tangentSample = vec3( x, y, z);\n      \n      vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * normal;\n        irradiance += (texture2D(environmentMap, nTOE(sampleVec)).xyz) * cos(theta) * sin(theta);\n      nrSamples++;\n    }\n	}\n	// divide by the total number of samples taken, giving us the average sampled irradiance.\n	irradiance = PI * irradiance * (1.0 / float(nrSamples )) ;\n  \n \n	gl_FragColor = vec4(irradiance, 1.0);\n}",
+                    imageLightDiffusedFrag: "precision highp float;\nvarying vec3 localPos;\n\n// the HDR cubemap converted (can be from an equirectangular environment map.)\nuniform sampler2D environmentMap;\nvarying vec2 vTexCoord;\n\nconst float PI = 3.14159265359;\n\nvec2 nTOE( vec3 v ){\n  // x = r sin(phi) cos(theta)   \n  // y = r cos(phi)  \n  // z = r sin(phi) sin(theta)\n  float phi = acos( v.y );\n  // if phi is 0, then there are no x, z components\n  float theta = 0.0;\n  // else \n  theta = acos(v.x / sin(phi));\n  float sinTheta = v.z / sin(phi);\n  if (sinTheta < 0.0) {\n    // Turn it into -theta, but in the 0-2PI range\n    theta = 2.0 * PI - theta;\n  }\n  theta = theta / (2.0 * 3.14159);\n  phi = phi / 3.14159 ;\n  \n  vec2 angles = vec2( phi, theta );\n  return angles;\n}\n\nfloat random(vec2 p) {\n  vec3 p3  = fract(vec3(p.xyx) * .1031);\n  p3 += dot(p3, p3.yzx + 33.33);\n  return fract((p3.x + p3.y) * p3.z);\n}\n\nvoid main()\n{   \t \n\t// the sample direction equals the hemisphere's orientation\n  float phi = vTexCoord.x * 2.0 * PI;\n  float theta = vTexCoord.y * PI;\n  float x = sin(theta) * cos(phi);\n  float y = sin(theta) * sin(phi);\n  float z = cos(theta);\n  vec3 normal = vec3( x, y, z);\n\n\t// Discretely sampling the hemisphere given the integral's\n  // spherical coordinates translates to the following fragment code:\n\tvec3 irradiance = vec3(0.0);  \n\tvec3 up\t= vec3(0.0, 1.0, 0.0);\n\tvec3 right = normalize(cross(up, normal));\n\tup = normalize(cross(normal, right));\n\n\t//  We specify a fixed sampleDelta delta value to traverse\n  // the hemisphere; decreasing or increasing the sample delta\n  // will increase or decrease the accuracy respectively.\n\tconst float sampleDelta = 0.100;\n\tfloat nrSamples = 0.0;\n  float randomOffset = random(gl_FragCoord.xy) * sampleDelta;\n\tfor(float rawPhi = 0.0; rawPhi < 2.0 * PI; rawPhi += sampleDelta)\n\t{\n    float phi = rawPhi + randomOffset;\n    for(float rawTheta = 0.0; rawTheta < ( 0.5 ) * PI; rawTheta += sampleDelta)\n    {\n      float theta = rawTheta + randomOffset;\n      // spherical to cartesian (in tangent space) // tangent space to world // add each sample result to irradiance\n      float x = sin(theta) * cos(phi);\n      float y = sin(theta) * sin(phi);\n      float z = cos(theta);\n      vec3 tangentSample = vec3( x, y, z);\n      \n      vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * normal;\n        irradiance += (texture2D(environmentMap, nTOE(sampleVec)).xyz) * cos(theta) * sin(theta);\n      nrSamples++;\n    }\n\t}\n\t// divide by the total number of samples taken, giving us the average sampled irradiance.\n\tirradiance = PI * irradiance * (1.0 / float(nrSamples )) ;\n  \n \n\tgl_FragColor = vec4(irradiance, 1.0);\n}",
                     imageLightSpecularFrag: "precision highp float;\r\nvarying vec3 localPos;\r\nvarying vec2 vTexCoord;\r\n\r\n// our texture\r\nuniform sampler2D environmentMap;\r\nuniform float roughness;\r\n\r\nconst float PI = 3.14159265359;\r\n\r\nfloat VanDerCorput(int bits);\r\nvec2 HammersleyNoBitOps(int i, int N);\r\nvec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness);\r\n\r\n\r\nvec2 nTOE( vec3 v ){\r\n  // x = r sin(phi) cos(theta)   \r\n  // y = r cos(phi)  \r\n  // z = r sin(phi) sin(theta)\r\n  float phi = acos( v.y );\r\n  // if phi is 0, then there are no x, z components\r\n  float theta = 0.0;\r\n  // else \r\n  theta = acos(v.x / sin(phi));\r\n  float sinTheta = v.z / sin(phi);\r\n  if (sinTheta < 0.0) {\r\n    // Turn it into -theta, but in the 0-2PI range\r\n    theta = 2.0 * PI - theta;\r\n  }\r\n  theta = theta / (2.0 * 3.14159);\r\n  phi = phi / 3.14159 ;\r\n  \r\n  vec2 angles = vec2( phi, theta );\r\n  return angles;\r\n}\r\n\r\n\r\nvoid main(){\r\n  const int SAMPLE_COUNT = 400; // 4096\r\n  int lowRoughnessLimit = int(pow(2.0,(roughness+0.1)*20.0));\r\n  float totalWeight = 0.0;\r\n  vec3 prefilteredColor = vec3(0.0);\r\n  float phi = vTexCoord.x * 2.0 * PI;\r\n  float theta = vTexCoord.y * PI;\r\n  float x = sin(theta) * cos(phi);\r\n  float y = sin(theta) * sin(phi);\r\n  float z = cos(theta);\r\n  vec3 N = vec3(x,y,z);\r\n  vec3 V = N;\r\n  for (int i = 0; i < SAMPLE_COUNT; ++i)\r\n  {\r\n    // break at smaller sample numbers for low roughness levels\r\n    if(i == lowRoughnessLimit)\r\n    {\r\n      break;\r\n    }\r\n    vec2 Xi = HammersleyNoBitOps(i, SAMPLE_COUNT);\r\n    vec3 H = ImportanceSampleGGX(Xi, N, roughness);\r\n    vec3 L = normalize(2.0 * dot(V, H) * H - V);\r\n\r\n    float NdotL = max(dot(N, L), 0.0);\r\n    if (NdotL > 0.0)\r\n    {\r\n      prefilteredColor += texture2D(environmentMap, nTOE(L)).xyz * NdotL;\r\n      totalWeight += NdotL;\r\n    }\r\n  }\r\n  prefilteredColor = prefilteredColor / totalWeight;\r\n\r\n  gl_FragColor = vec4(prefilteredColor, 1.0);\r\n}\r\n\r\nvec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness){\r\n  float a = roughness * roughness;\r\n\r\n  float phi = 2.0 * PI * Xi.x;\r\n  float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a * a - 1.0) * Xi.y));\r\n  float sinTheta = sqrt(1.0 - cosTheta * cosTheta);\r\n  // from spherical coordinates to cartesian coordinates\r\n  vec3 H;\r\n  H.x = cos(phi) * sinTheta;\r\n  H.y = sin(phi) * sinTheta;\r\n  H.z = cosTheta;\r\n\r\n  // from tangent-space vector to world-space sample vector\r\n  vec3 up = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);\r\n  vec3 tangent = normalize(cross(up, N));\r\n  vec3 bitangent = cross(N, tangent);\r\n\r\n  vec3 sampleVec = tangent * H.x + bitangent * H.y + N * H.z;\r\n  return normalize(sampleVec);\r\n}\r\n\r\n\r\nfloat VanDerCorput(int n, int base)\r\n{\r\n#ifdef WEBGL2\r\n\r\n    uint bits = uint(n);\r\n    bits = (bits << 16u) | (bits >> 16u);\r\n    bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);\r\n    bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);\r\n    bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);\r\n    bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);\r\n    return float(bits) * 2.3283064365386963e-10; // / 0x100000000\r\n\r\n#else\r\n\r\n  float invBase = 1.0 / float(base);\r\n  float denom = 1.0;\r\n  float result = 0.0;\r\n\r\n\r\n  for (int i = 0; i < 32; ++i)\r\n  {\r\n        if (n > 0)\r\n        {\r\n        denom = mod(float(n), 2.0);\r\n        result += denom * invBase;\r\n        invBase = invBase / 2.0;\r\n        n = int(float(n) / 2.0);\r\n        }\r\n  }\r\n\r\n\r\n  return result;\r\n\r\n#endif\r\n}\r\n\r\nvec2 HammersleyNoBitOps(int i, int N)\r\n{\r\n  return vec2(float(i) / float(N), VanDerCorput(i, 2));\r\n}\r\n"
                 }, M = E.sphereMappingFrag;
                 for(x in E)E[x] = "#ifdef WEBGL2\n\n#define IN in\n#define OUT out\n\n#ifdef FRAGMENT_SHADER\nout vec4 outColor;\n#define OUT_COLOR outColor\n#endif\n#define TEXTURE texture\n\n#else\n\n#ifdef FRAGMENT_SHADER\n#define IN varying\n#else\n#define IN attribute\n#endif\n#define OUT varying\n#define TEXTURE texture2D\n\n#ifdef FRAGMENT_SHADER\n#define OUT_COLOR gl_FragColor\n#endif\n\n#endif\n" + E[x];
@@ -32657,7 +32777,7 @@ new (0, _p5Default.default)((sk)=>{
     ])(264);
 });
 
-},{}],"2RWfO":[function(require,module,exports) {
+},{}],"gm6zw":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "initializeCamCapture", ()=>initializeCamCapture);
@@ -32667,7 +32787,7 @@ function initializeCamCapture(sketch) {
         video: {
             width: {
                 min: 1024,
-                ideal: 1440,
+                ideal: 1920,
                 max: 1920
             },
             height: {
@@ -32702,20 +32822,20 @@ function initializeCamCapture(sketch) {
     return camFeed;
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"jnFvT":[function(require,module,exports,__globalThis) {
 exports.interopDefault = function(a) {
     return a && a.__esModule ? a : {
         default: a
     };
 };
 exports.defineInteropFlag = function(a) {
-    Object.defineProperty(a, "__esModule", {
+    Object.defineProperty(a, '__esModule', {
         value: true
     });
 };
 exports.exportAll = function(source, dest) {
     Object.keys(source).forEach(function(key) {
-        if (key === "default" || key === "__esModule" || Object.prototype.hasOwnProperty.call(dest, key)) return;
+        if (key === 'default' || key === '__esModule' || Object.prototype.hasOwnProperty.call(dest, key)) return;
         Object.defineProperty(dest, key, {
             enumerable: true,
             get: function() {
@@ -32732,7 +32852,7 @@ exports.export = function(dest, destName, get) {
     });
 };
 
-},{}],"bVlgj":[function(require,module,exports) {
+},{}],"1X9hu":[function(require,module,exports,__globalThis) {
 // ---- SAVE P5 CANVAS SNAPSHOT AS PNG
 // -----------------------------------
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -32756,6 +32876,9 @@ function pulse(sk, min, max, time) {
     return amplitude * sk.sin(sk.frameCount * (sk.TWO_PI / time)) + mid;
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["h9Rts","fFaKF"], "fFaKF", "parcelRequire94c2")
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4FU6e":[function(require,module,exports,__globalThis) {
+module.exports = module.bundle.resolve("MonaspaceNeon-WideExtraLight.5208ae0a.otf") + "?" + Date.now();
 
-//# sourceMappingURL=index.0fbc91cd.js.map
+},{}]},["2aZ6o","8JWvp"], "8JWvp", "parcelRequire94c2", {}, "./", "/")
+
+//# sourceMappingURL=mmc-yoko.c6396971.js.map

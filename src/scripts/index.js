@@ -1,6 +1,7 @@
 import p5 from "p5";
 import { initializeCamCapture } from "./cameraUtils";
 import { saveCanvasAsPNG } from "./utils";
+import fontUrl from "../assets/fonts/MonaspaceNeon-WideExtraLight.otf";
 
 new p5((sk) => {
   // ---- SETTINGS
@@ -10,6 +11,10 @@ new p5((sk) => {
   let capture;
   let sliceWidth, sliceHeight, sliceStartX, sliceStartY;
   let sliceSlider;
+  let customFont;
+  let startTime;
+  let experienceStarted = false;
+  let fadeStartTime;
 
   const buffer = [];
 
@@ -17,6 +22,12 @@ new p5((sk) => {
     sk.createCanvas(sk.windowWidth, sk.windowHeight);
     capture = initializeCamCapture(sk);
     sk.colorMode(sk.HSL, 360, 100, 100, 100);
+
+    // Load custom font
+    customFont = sk.loadFont(fontUrl);
+
+    // Initialize timer
+    startTime = sk.millis();
 
     sliceSlider = document.getElementById("sliceSlider");
 
@@ -27,7 +38,49 @@ new p5((sk) => {
   };
 
   sk.draw = () => {
-    sk.background("red");
+    sk.background("black");
+
+    let elapsedTime = sk.millis() - startTime;
+    let isExperienceReady = capture && capture.loadedmetadata;
+
+    if (elapsedTime < 2000 || !isExperienceReady) {
+      sk.push();
+      sk.fill(255, 255, 255, 255);
+      if (customFont) {
+        sk.textFont(customFont);
+      }
+      sk.textAlign(sk.CENTER);
+      sk.textSize(32);
+      sk.text("WALKING PIECE", sk.width / 2, sk.height / 2);
+      sk.pop();
+
+      return;
+    }
+
+    if (!fadeStartTime) {
+      fadeStartTime = sk.millis();
+    }
+
+    // Fade for 1 second after ready
+    if (sk.millis() - fadeStartTime < 1000) {
+      let fadeAlpha = sk.map(sk.millis() - fadeStartTime, 0, 1000, 255, 0);
+
+      sk.push();
+      sk.fill(255, 255, 255, fadeAlpha);
+      if (customFont) {
+        sk.textFont(customFont);
+      }
+      sk.textAlign(sk.CENTER);
+      sk.textSize(32);
+      sk.text("WALKING PIECE", sk.width / 2, sk.height / 2);
+      sk.pop();
+
+      return;
+    }
+
+    // Set experience as started after resources are ready
+    experienceStarted = true;
+
     numSlices = parseInt(sliceSlider.value);
     sliceWidth = sk.width / numSlices;
 
