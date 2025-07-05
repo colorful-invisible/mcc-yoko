@@ -13,6 +13,7 @@ new p5((sk) => {
   let sliceSlider;
   let customFont;
   let startTime;
+  let experienceStarted = false;
   let fadeStartTime;
 
   const buffer = [];

@@ -692,7 +692,6 @@ new (0, _p5Default.default)((sk)=>{
     sk.setup = ()=>{
         sk.createCanvas(sk.windowWidth, sk.windowHeight);
         capture = (0, _cameraUtils.initializeCamCapture)(sk);
-        sk.colorMode(sk.HSL, 360, 100, 100, 100);
         // Initialize timer
         startTime = sk.millis();
         sliceSlider = document.getElementById("sliceSlider");
