@@ -16,6 +16,80 @@ main {
   position: relative;
 }
 
+.controls {
+  z-index: 1;
+  opacity: .15;
+  align-items: center;
+  gap: 2rem;
+  transition: opacity .3s;
+  display: flex;
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.controls:hover {
+  opacity: 1;
+}
+
+.control-group {
+  flex-direction: column;
+  align-items: center;
+  gap: .5rem;
+  display: flex;
+}
+
+.control-group label {
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  font-size: .8rem;
+}
+
+.toggle-container {
+  align-items: center;
+  gap: .5rem;
+  display: flex;
+}
+
+.toggle-label {
+  color: #fff;
+  opacity: .7;
+  font-size: .7rem;
+}
+
+.toggle {
+  appearance: none;
+  cursor: pointer;
+  background: #ffffff4d;
+  border-radius: 12px;
+  width: 50px;
+  height: 24px;
+  transition: background .3s;
+  position: relative;
+}
+
+.toggle:checked {
+  background: #fff9;
+}
+
+.toggle:before {
+  content: "";
+  background: #fff;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  transition: transform .3s;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+}
+
+.toggle:checked:before {
+  transform: translateX(26px);
+}
+
 canvas {
   z-index: -1;
   position: absolute;
@@ -24,16 +98,6 @@ canvas {
 }
 
 .range {
-  z-index: 1;
-  opacity: .15;
-  padding: 1rem;
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.range:hover {
   opacity: 1;
   cursor: pointer;
 }

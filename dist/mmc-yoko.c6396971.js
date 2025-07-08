@@ -160,11 +160,11 @@
       });
     }
   }
-})({"2aZ6o":[function(require,module,exports,__globalThis) {
+})({"gRMu3":[function(require,module,exports,__globalThis) {
 var global = arguments[3];
 var HMR_HOST = null;
 var HMR_PORT = null;
-var HMR_SERVER_PORT = 1234;
+var HMR_SERVER_PORT = 59485;
 var HMR_SECURE = false;
 var HMR_ENV_HASH = "439701173a9199ea";
 var HMR_USE_SSE = false;
@@ -678,9 +678,11 @@ new (0, _p5Default.default)((sk)=>{
     // ---- SETTINGS
     let numSlices = 12;
     let delay = 12;
+    let isHorizontal = false; // false = vertical, true = horizontal
     let capture;
     let sliceWidth, sliceHeight, sliceStartX, sliceStartY;
     let sliceSlider;
+    let orientationToggle;
     let customFont;
     let startTime;
     let experienceStarted = false;
@@ -695,10 +697,27 @@ new (0, _p5Default.default)((sk)=>{
         // Initialize timer
         startTime = sk.millis();
         sliceSlider = document.getElementById("sliceSlider");
-        sliceWidth = sk.width / numSlices;
-        sliceHeight = sk.height;
-        sliceStartX = sk.width / 2 - sliceWidth / 2;
-        sliceStartY = 0;
+        orientationToggle = document.getElementById("orientationToggle");
+        // Add event listener for orientation toggle
+        orientationToggle.addEventListener("change", (e)=>{
+            isHorizontal = e.target.checked;
+            updateSliceDimensions();
+        });
+        updateSliceDimensions();
+    };
+    // Function to update slice dimensions based on orientation
+    const updateSliceDimensions = ()=>{
+        if (isHorizontal) {
+            sliceWidth = sk.width;
+            sliceHeight = Math.floor(sk.height / numSlices);
+            sliceStartX = 0;
+            sliceStartY = sk.height / 2 - sliceHeight / 2;
+        } else {
+            sliceWidth = Math.floor(sk.width / numSlices);
+            sliceHeight = sk.height;
+            sliceStartX = sk.width / 2 - sliceWidth / 2;
+            sliceStartY = 0;
+        }
     };
     sk.draw = ()=>{
         sk.background("black");
@@ -730,28 +749,63 @@ new (0, _p5Default.default)((sk)=>{
         // Set experience as started after resources are ready
         experienceStarted = true;
         numSlices = parseInt(sliceSlider.value);
-        sliceWidth = sk.width / numSlices;
+        // Update slice dimensions when numSlices changes
+        if (isHorizontal) sliceHeight = Math.floor(sk.height / numSlices);
+        else sliceWidth = Math.floor(sk.width / numSlices);
+        updateSliceDimensions();
         if (numSlices > 72 && numSlices < 120) delay = 4;
         else if (numSlices > 48 && numSlices < 72) delay = 8;
         else if (numSlices > 12 && numSlices < 48) delay = 12;
         else if (numSlices < 12) delay = 16;
-        let currentFrame = capture.get(sliceStartX, sliceStartY, sliceWidth, sliceHeight);
-        buffer.push(currentFrame);
+        // Capture frames based on orientation
+        if (isHorizontal) {
+            // For horizontal: capture different horizontal strips
+            const capturedSlices = [];
+            for(let i = 0; i < numSlices; i++){
+                let captureY = Math.floor(i * capture.height / numSlices);
+                let captureHeight = Math.floor(capture.height / numSlices);
+                let slice = capture.get(0, captureY, capture.width, captureHeight);
+                capturedSlices.push(slice);
+            }
+            buffer.push(capturedSlices);
+        } else {
+            // For vertical: capture from center (original behavior)
+            let currentFrame = capture.get(sliceStartX, sliceStartY, sliceWidth, sliceHeight);
+            buffer.push(currentFrame);
+        }
         let bufferSizeLimit = numSlices * delay;
         if (buffer.length > bufferSizeLimit) buffer.shift();
         for(let i = 0; i < numSlices; i++){
             let bufferIndex = buffer.length - 1 - i * delay;
             if (bufferIndex >= 0) {
-                let slice = buffer[bufferIndex];
                 sk.push();
                 // let tintHue = (sk.frameCount - i * delay) % 360;
                 // let tintOpacity = pulse(sk, 0, 100, delay * i + 120);
                 // sk.tint(tintHue, 100, 50, 100);
-                sk.translate(i * sliceWidth - sliceWidth, 0);
-                sk.image(slice, sliceWidth, 0);
+                if (isHorizontal) {
+                    // Horizontal slicing: use the captured slice for this position
+                    let sliceArray = buffer[bufferIndex];
+                    if (sliceArray && sliceArray[i]) {
+                        let slice = sliceArray[i];
+                        // Position each slice directly at its correct Y position with integer values
+                        let yPos = i * sliceHeight;
+                        // For the last slice, extend it to fill any remaining pixels
+                        let currentSliceHeight = i === numSlices - 1 ? sk.height - yPos : sliceHeight;
+                        sk.image(slice, 0, yPos, sk.width, currentSliceHeight);
+                    }
+                } else {
+                    // Vertical slicing: translate horizontally (original behavior)
+                    let slice = buffer[bufferIndex];
+                    sk.translate(i * sliceWidth - sliceWidth, 0);
+                    sk.image(slice, sliceWidth, 0);
+                }
                 sk.pop();
             }
         }
+    };
+    sk.windowResized = ()=>{
+        sk.resizeCanvas(sk.windowWidth, sk.windowHeight);
+        updateSliceDimensions();
     };
     (0, _utils.saveCanvasAsPNG)(sk);
 });
@@ -32879,6 +32933,6 @@ function pulse(sk, min, max, time) {
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4FU6e":[function(require,module,exports,__globalThis) {
 module.exports = module.bundle.resolve("MonaspaceNeon-WideExtraLight.5208ae0a.otf") + "?" + Date.now();
 
-},{}]},["2aZ6o","8JWvp"], "8JWvp", "parcelRequire94c2", {}, "./", "/")
+},{}]},["gRMu3","8JWvp"], "8JWvp", "parcelRequire94c2", {}, "./", "/")
 
 //# sourceMappingURL=mmc-yoko.c6396971.js.map

@@ -16,6 +16,80 @@ main {
   height: 100vh;
 }
 
+.controls {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  opacity: 0.15;
+  transition: opacity 0.3s ease;
+}
+
+.controls:hover {
+  opacity: 1;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.control-group label {
+  color: white;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toggle-label {
+  color: white;
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+.toggle {
+  appearance: none;
+  width: 50px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.toggle:checked {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.toggle::before {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.3s ease;
+}
+
+.toggle:checked::before {
+  transform: translateX(26px);
+}
+
 canvas {
   position: absolute;
   top: 0;
@@ -24,16 +98,6 @@ canvas {
 }
 
 .range {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1;
-  padding: 1rem;
-  opacity: 0.15;
-}
-
-.range:hover {
   opacity: 1;
   cursor: pointer;
 }

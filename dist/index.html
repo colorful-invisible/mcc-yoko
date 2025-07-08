@@ -6,7 +6,20 @@
   </head>
   <body>
     <main>
-      <input type="range" id="sliceSlider" min="2" max="120" value="12" class="range">
+      <div class="controls">
+        <div class="control-group">
+          <label for="orientationToggle">Orientation:</label>
+          <div class="toggle-container">
+            <span class="toggle-label">Vertical</span>
+            <input type="checkbox" id="orientationToggle" class="toggle">
+            <span class="toggle-label">Horizontal</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <label for="sliceSlider">Slices:</label>
+          <input type="range" id="sliceSlider" min="2" max="120" value="12" class="range">
+        </div>
+      </div>
     </main>
     <script type="module" src="/mmc-yoko.c6396971.js"></script>
   
